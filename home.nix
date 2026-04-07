@@ -31,6 +31,12 @@ in
   home.stateVersion = "25.11";
   manual.manpages.enable = true;
 
+  # Habilita flakes en Home-Manager
+  nix = {
+    package = pkgs.nix;
+    settings.experimental-features = ["nix command" "flakes"];
+  };
+
   home.sessionVariables = {
     EDITOR = "nvim";
     VISUAL = "nvim";

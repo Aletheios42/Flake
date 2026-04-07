@@ -97,7 +97,7 @@
   users.users.aletheios42 = {
     isNormalUser = true;
     initialPassword = "1234";
-    extraGroups = [ "wheel" "networkmanager" "video" "input" "audio" "docker" "libvirtd" ];
+    extraGroups = [ "wheel" "networkmanager" "video" "input" "audio" "docker" "uucp" "dialout" "libvirtd" ];
     shell = pkgs.zsh;
   };
 
