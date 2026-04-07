@@ -31,12 +31,6 @@ in
   home.stateVersion = "25.11";
   manual.manpages.enable = true;
 
-  # Habilita flakes en Home-Manager
-  nix = {
-    package = pkgs.nix;
-    settings.experimental-features = ["nix command" "flakes"];
-  };
-
   home.sessionVariables = {
     EDITOR = "nvim";
     VISUAL = "nvim";
@@ -118,6 +112,10 @@ in
 
     # Scripts
     scripts.tree-cat
+    scripts.screenshot-x11
+    scripts.toggle-record-x11
+    scripts.screenshot-wayland
+    scripts.toggle-record-wayland
   ];
 
   # zathura

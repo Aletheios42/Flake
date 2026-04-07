@@ -22,6 +22,7 @@
     nixosConfigurations = {
       machine = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
+        # Para que esta linea home-manager hereda todo lo de config.nix(es decir el sistema)
         specialArgs = { inherit inputs; };
         modules = [
           # 1. 
