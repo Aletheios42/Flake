@@ -90,7 +90,7 @@ in
     obsidian
 
     # Redes
-    ethtool dnsutils
+    ethtool dnsutils net-tools fping
 
     # Emulacion
     qemu virt-manager
@@ -98,7 +98,7 @@ in
     # Utils
     # no se si tengo que hacer algo extra con pancdoc
     pandoc texlive.combined.scheme-medium
-    ripgrep fd
+    ripgrep fd bat
     tree
     perf
     direnv

@@ -158,8 +158,7 @@
         { key = "<F1>";  mode = "n"; action = ":set number! relativenumber!<CR>";       desc = "Toggle line numbers"; }
         { key = "<F2>"; mode = "n"; action = ":set listchars=space:·,tab:→\\ ,eol:↲,trail:•<CR>:set list!<CR>"; desc = "Toggle listchars"; }
         { key = "<F3>";  mode = "n"; action = ":set cursorline!<CR>";                   desc = "Toggle cursorline"; }
-        { key = "<F4>"; mode = "n"; action = "<cmd>lua if vim.bo.ft=='markdown' then vim.cmd('MarkdownPreviewToggle') elseif vim.bo.ft=='tex' then vim.cmd('VimtexCompile') vim.cmd('VimtexView') end<CR>"; desc = "Preview markup"; }
-
+        { key = "<F4>"; mode = "n"; action = "<cmd>lua local ft = vim.bo.ft; if ft=='markdown' then vim.cmd('MarkdownPreviewToggle') elseif ft=='tex' then vim.cmd('VimtexCompile') vim.cmd('VimtexView') elseif ft=='pdf' then vim.fn.jobstart({'zathura', vim.fn.expand('%')}) end<CR>";  desc = "Preview markup"; }
         { key = "<F5>"; mode = "n"; action = "za";                          desc = "Toggle fold (current)"; }
         { key = "<F6>"; mode = "n"; action = "zA";                          desc = "Toggle fold (recursive)"; }
         { key = "<F7>"; mode = "n"; action = "zi";                          desc = "Toggle foldenable (all)"; }
