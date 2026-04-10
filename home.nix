@@ -49,9 +49,6 @@ in
   # --- PAQUETERÍA ---
   home.packages = with pkgs; [
 
-    # Lenguages
-    go zig rustup python3 lua php elixir julia R ocaml nodejs terraform typst gleam
-
     # Teclado
     wev xev
 
@@ -94,9 +91,6 @@ in
 
     # Redes
     ethtool dnsutils
-
-    # Contenedores
-    dive trivy crane nerdctl kubectl
 
     # Emulacion
     qemu virt-manager
@@ -190,14 +184,12 @@ in
     ];
   };
 
-  # Zsh (Tuneado básico)
+  # Zsh
   programs.zsh = {
     enable = true;
     enableCompletion = true;
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
-
-    # Oh-my-zsh integrado
     oh-my-zsh = {
       enable = true;
       plugins = [
@@ -205,9 +197,22 @@ in
       ];
       theme = "robbyrussell";
     };
+    plugins = [
+      {
+        name = "fzf-tab";
+        src = pkgs.zsh-fzf-tab;
+        file = "share/fzf-tab/fzf-tab.plugin.zsh";
+      }
+    ];
+    initContent = ''
+        zstyle ':completion:*' menu no
+        zstyle ':completion:*' use-cache on
+        zstyle ':completion:*' cache-path ~/.zcompcache
+        source ${pkgs.zsh-fzf-tab}/share/fzf-tab/fzf-tab.plugin.zsh
+    '';
   };
 
-  # Kitty Beep
+  # Kitty
   programs.kitty = {
     enable = true;
     settings = {
@@ -218,7 +223,6 @@ in
   # Git
   programs.git = {
     enable = true;
-    # En lugar de userName/userEmail/extraConfig sueltos:
     settings = {
       user = {
         name = "aletheios42";
