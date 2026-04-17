@@ -41,8 +41,6 @@
   networking.networkmanager.enable = true;
   time.timeZone = "Europe/Madrid";
   i18n.defaultLocale = "es_ES.UTF-8";
-  networking.nftables.enable = false;
-  boot.kernelModules = [ "ip_tables" "iptable_nat" "iptable_filter" "nf_nat" ];
 
   # --- CONSOLA & KEYMAP ---
   console.earlySetup = true; #Aplica key repeat y dealy en las tty

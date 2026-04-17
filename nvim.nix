@@ -88,6 +88,14 @@
         })
       '';
 
+      luaConfigRC.no-auto-comment = ''
+        vim.api.nvim_create_autocmd("BufEnter", {
+          callback = function()
+            vim.opt_local.formatoptions:remove({ "c", "r", "o" })
+          end,
+        })
+      '';
+
       autocomplete.nvim-cmp.enable = true;
       luaConfigRC.cmp-keymaps = ''
         local cmp = require('cmp')
@@ -174,7 +182,7 @@
         { key = "<leader>bn"; mode = "n"; action = ":bnext<CR>";                                 desc = "Next buffer"; }
         { key = "<leader>bp"; mode = "n"; action = ":bprevious<CR>";                             desc = "Prev buffer"; }
         { key = "<leader>bd"; mode = "n"; action = ":bdelete<CR>";                               desc = "Delete buffer"; }
-        
+
         # LSP goto (g sin leader)
         { key = "gd"; mode = "n"; action = "<cmd>lua require('fzf-lua').lsp_definitions()<CR>";      desc = "Go to definition"; }
         { key = "gr"; mode = "n"; action = "<cmd>lua require('fzf-lua').lsp_references()<CR>";       desc = "Go to references"; }

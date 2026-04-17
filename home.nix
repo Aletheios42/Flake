@@ -8,20 +8,6 @@ let
   carpeta_musica = "Comunes/Música";
   carpeta_grabaciones = "Comunes/Videos/Grabaciones";
   carpeta_pantallazo = "Comunes/Imagenes/Pantallazos";
-  dagger = pkgs.stdenv.mkDerivation rec {
-    name = "dagger";
-    version = "0.20.1";
-    src = pkgs.fetchurl {
-      url = "https://dl.dagger.io/dagger/releases/${version}/dagger_v${version}_linux_amd64.tar.gz";
-      sha256 = "sha256-ASr6gZqdRZOJrzTxBVwGTcEXiBCAv5HcMaa0aU8rz5k=";
-    };
-    dontUnpack = true;
-    installPhase = ''
-    mkdir -p $out/bin
-    tar -xzf $src -C $out/bin dagger
-    chmod +x $out/bin/dagger
-    '';
-  };
 in
   {
   imports = [ ./i3.nix ./sway.nix ./nvim.nix  inputs.nvf.homeManagerModules.default ];
@@ -43,11 +29,20 @@ in
     #clean.dates = "ya veremos";
   };
     
-
   # --- SSH ---
   services.ssh-agent.enable = true;
+
   # --- PAQUETERÍA ---
   home.packages = with pkgs; [
+
+    # Lenguajes
+    python3
+
+    # Dev Tools C/C++ & Debug
+    clang gnumake cmake
+    gdb valgrind
+    clang-tools # Incluye clangd, clang-format
+    compiledb # Genera compile_commands.json para LSP
 
     # Teclado
     wev xev
@@ -62,6 +57,7 @@ in
     brightnessctl
 
     # Multimedia
+    grayjay
     musikcube # Reproductor de música
     pavucontrol # Para controlar el volumen gráficamente
     vlc mpv ffmpeg-full # Reproductor de video
@@ -80,12 +76,6 @@ in
     # Seguridad
     keepassxc
 
-    # Dev Tools C/C++ & Debug
-    gcc gnumake cmake
-    gdb valgrind
-    clang-tools # Incluye clangd, clang-format
-    compiledb # Genera compile_commands.json para LSP
-
     # Notas
     obsidian
 
@@ -103,6 +93,7 @@ in
     perf
     direnv
     zip unzip
+    tldr
 
     # Scripts
     scripts.tree-cat
@@ -156,7 +147,7 @@ in
 
     # Esto hace que fzf use ripgrep (rg) para buscar archivos.
     # Es mucho más rápido y respeta el .gitignore
-    defaultCommand = "rg --files --hidden --glob '!.git/*'";
+    defaultCommand = "rg --files --hidden --smart-case";
   };
 
   # Tmux
@@ -172,13 +163,6 @@ in
         plugin = resurrect;
         extraConfig = ''
           set -g @resurrect-strategy-nvim 'session'
-        '';
-      }
-      {
-        plugin = continuum;
-        extraConfig = ''
-          set -g @continuum-restore 'on'
-          set -g @continuum-save-interval '10'
         '';
       }
     ];
@@ -231,6 +215,13 @@ in
       init.defaultBranch = "master";
       credential.helper = "store";
     };
+  };
+
+  # Direnv
+  programs.direnv = {
+    enable = true;
+    enableZshIntegration = true;
+    nix-direnv.enable = true;
   };
 
   # OBS
