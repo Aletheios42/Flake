@@ -24,18 +24,6 @@
       options = [ "fmask=0022" "dmask=0022" ];
     };
 
-    fileSystems."/home/aletheios42/Comunes" = {
-    device = "/dev/disk/by-uuid/B6864A79864A39DF";
-    fsType = "ntfs-3g";
-    options = [
-        "rw"
-        "nofail"
-        "uid=1000"
-        "gid=1000"
-        "umask=0022"
-    ];
-  };
-
   swapDevices = [ ];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";

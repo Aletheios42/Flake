@@ -5,3 +5,4 @@ if pgrep wf-recorder; then
 else
     wf-recorder -g "$(slurp)" -f "@carpeta_grabaciones@/$(date +%s).mp4" &
 fi
+

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+tree && fd -t f | while read -r f; do echo ""; echo "=== $f ==="; echo ""; cat "$f"; done
 # Función para mostrar la ayuda
 mostrar_ayuda() {
     echo "Uso: $0 [opciones] [patrón_a_ignorar]"

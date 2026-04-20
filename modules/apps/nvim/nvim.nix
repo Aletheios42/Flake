@@ -69,10 +69,9 @@
         enableTreesitter = true;
         nix.enable = true; lua.enable = true; bash.enable = true;
         clang.enable = true; rust.enable = true; zig.enable = true; assembly.enable = true; go.enable = true; 
-        elixir.enable = true; gleam.enable = true; ocaml.enable = true;
-        python.enable = true; julia.enable = true; r.enable = true;
+        python.enable = true; 
         terraform.enable = true; helm.enable = true; hcl.enable = true; sql.enable = true;
-        html.enable = true; css.enable = true; tailwind.enable = true; svelte.enable = true; ts.enable = true; php.enable = true;
+        html.enable = true; css.enable = true; svelte.enable = true; typescript.enable = true; php.enable = true;
         typst.enable = true; yaml.enable = true; markdown.enable = true;
       };
 
@@ -122,13 +121,13 @@
       binds.whichKey.enable = true;
       telescope.enable = true;
 
-      extraPlugins = with pkgs.vimPlugins; {
+      extraPlugins =  {
         vim-tmux-navigator = {
-          package = vim-tmux-navigator;
+          package = pkgs.vimPlugins.vim-tmux-navigator;
           setup = "";
         };
         leap = {
-          package = leap-nvim;
+          package = pkgs.vimPlugins.leap-nvim;
           setup = ''
             require('leap').setup({})
             vim.keymap.set({'n','x','o'}, 's',  '<Plug>(leap-forward)')
@@ -136,15 +135,15 @@
           '';
         };
         mini-files = {
-          package = mini-nvim;
+          package = pkgs.vimPlugins.mini-nvim;
           setup = "require('mini.files').setup()";
         };
         fzf-lua = {
-          package = fzf-lua;
+          package = pkgs.vimPlugins.fzf-lua;
           setup = "require('fzf-lua').setup()";
         };
         vimtex = {
-          package = vimtex;
+          package = pkgs.vimPlugins.vimtex;
           setup = ''
             vim.g.vimtex_view_method = 'zathura'
             vim.g.vimtex_compiler_method = 'latexmk'
@@ -152,7 +151,7 @@
           '';
         };
         markdown-preview = {
-          package = markdown-preview-nvim;
+          package = pkgs.vimPlugins.markdown-preview-nvim;
           setup = "";
         };
       };
@@ -235,3 +234,4 @@
     };
   };
 }
+
