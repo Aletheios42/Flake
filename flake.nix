@@ -16,20 +16,26 @@
   };
 
   outputs = { self, nixpkgs, nix-index-database, nvf, ...}@inputs: {
+
     nixosConfigurations = {
       machine = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
-          # 1. Hosts
           ./hosts/machine/configuration.nix
-          ./hosts/server/configuration.nix
-          # 2.
           nix-index-database.nixosModules.nix-index
-          # 3. 
           nvf.nixosModules.default
         ];
       };
+      server = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./hosts/server/configuration.nix
+          nix-index-database.nixosModules.nix-index
+        ];
+      };
     };
+
+
   };
 }
 
