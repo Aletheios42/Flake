@@ -1,4 +1,25 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
+
+let
+  mkMenu = import ./scripts/menu.nix { inherit pkgs lib; };
+  menuNavegadores = mkMenu "menu-navegadores" [
+    {
+      cmd = "librewolf"; 
+      desc = "Lanzar LibreWolf"; 
+      key = "l"; 
+    }
+    {
+      cmd = "google-chrome-stable"; 
+      desc = "Lanzar Google Chrome"; 
+      key = "c"; 
+    }
+    {
+      cmd = "qutebrowser"; 
+      desc = "Lanzar Qutebrowser"; 
+      key = "q"; 
+    }
+  ];
+in
 {
   nixpkgs.config.allowUnfree = true; # chrome
 
@@ -28,5 +49,6 @@
   userPackages.browsers = [
     pkgs.qutebrowser
     pkgs.google-chrome
+    menuNavegadores
   ];
 }
