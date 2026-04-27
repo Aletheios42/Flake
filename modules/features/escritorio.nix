@@ -1,43 +1,49 @@
-{ pkgs, lib, ... }:
+{ pkgs, lib, config, ... }:
 let
   screenshot = pkgs.writeShellApplication {
     name = "screenshot-wayland";
     runtimeInputs = [ pkgs.grim pkgs.slurp ];
-    text = builtins.readFile (pkgs.replaceVars ./scripts/screenshot-wayland.sh {
+    text = builtins.readFile (pkgs.replaceVars ../scripts/screenshot-wayland.sh {
       carpeta_pantallazo = "/home/aletheios42/Multimedia/Imagenes/Pantallazos";
     });
   };
   toggle-record = pkgs.writeShellApplication {
     name = "toggle-record-wayland";
     runtimeInputs = [ pkgs.wf-recorder pkgs.slurp ];
-    text = builtins.readFile (pkgs.replaceVars ./scripts/toggle-record-wayland.sh {
+    text = builtins.readFile (pkgs.replaceVars ../scripts/toggle-record-wayland.sh {
       carpeta_grabaciones = "/home/aletheios42/Multimedia/Videos/Grabaciones";
     });
   };
-  mkMenu = import ./scripts/menu.nix { inherit pkgs lib; };
-  menuNavegadores = mkMenu "menu-navegadores" [
-    { cmd = "librewolf"; desc = "Abrir LibreWolf"; key = "l"; }
-    { cmd = "google-chrome-stable"; desc = "Abrir Chrome"; key = "c"; }
-    { cmd = "qutebrowser"; desc = "Abrir Qutebrowser"; key = "q"; }
-  ];
 in
 {
-  programs.sway.enable = true;
-  # programs.waybar.enable = true;
-  xdg.portal = {
-    enable = true;
-    wlr.enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+  options.escritorio = {
+    enable = lib.mkEnableOption "activar sway o niri";
+    tailing = lib.mkOption {
+      type = lib.types.enum [ "sway" "niri" ];
+      default = "sway";
+      description = "Activa sway o niri";
+    };
   };
-  programs.sway.extraPackages = [
-    pkgs.rofi pkgs.swaylock pkgs.wl-clipboard pkgs.brightnessctl
-    screenshot toggle-record
-    menuNavegadores
-  ];
 
-  environment.etc."sway/config".text = ''
+  config = lib.mkIf (config.escritorio.enable) (lib.mkMerge [
+    {
+      xdg.portal = {
+        enable = true;
+        wlr.enable = true;
+        extraPortals = [pkgs.xdg-desktop-portal-gtk ];
+      };
+    }
+    (lib.mkIf (config.escritorio.tailing == "sway") {
+      programs.sway.enable = true;
+      programs.waybar.enable = true;
+      programs.sway.extraPackages = [
+        pkgs.rofi pkgs.swaylock pkgs.wl-clipboard pkgs.brightnessctl
+        screenshot toggle-record
+      ];
+      environment.etc."sway/config".text = ''
       font pango:monospace 8.000000
       floating_modifier Mod4
+
       default_border normal 2
       default_floating_border normal 4
       hide_edge_borders none
@@ -47,7 +53,7 @@ in
       mouse_warping output
       workspace_layout default
       workspace_auto_back_and_forth no
-      
+
       client.focused #4c7899 #285577 #ffffff #2e9ef4 #285577
       client.focused_inactive #333333 #5f676a #ffffff #484e50 #5f676a
       client.unfocused #333333 #222222 #888888 #292d2e #222222
@@ -114,6 +120,7 @@ in
       bindsym Mod4+shift+Print exec toggle-record-wayland
       bindsym Mod4+space focus mode_toggle
       bindsym Mod4+w layout tabbed
+
       bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%-
       bindsym XF86AudioMicMute exec wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
       bindsym XF86AudioMute exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
@@ -147,7 +154,11 @@ in
       bar {
         swaybar_command ${pkgs.waybar}/bin/waybar
       }
-
-      exec "/nix/store/c9cnbxhxbagj7gfpc1g5hl4x4f8dzayv-dbus-1.16.2/bin/dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP XDG_SESSION_TYPE NIXOS_OZONE_WL XCURSOR_THEME XCURSOR_SIZE; systemctl --user reset-failed && systemctl --user start sway-session.target && swaymsg -mt subscribe '[]' || true && systemctl --user stop sway-session.target"
-  '';
+      exec "${pkgs.dbus}/bin/dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP XDG_SESSION_TYPE NIXOS_OZONE_WL XCURSOR_THEME XCURSOR_SIZE; systemctl --user reset-failed && systemctl --user start sway-session.target && swaymsg -mt subscribe '[]' || true && systemctl --user stop sway-session.target"
+      '';
+    })
+    (lib.mkIf (config.escritorio.tailing == "niri") {
+      programs.niri.enable = true;
+    })
+  ]);
 }

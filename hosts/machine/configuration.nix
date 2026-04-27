@@ -2,35 +2,39 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../../modules/core/system.nix
-    ../../modules/core/boot.nix
-    ../../modules/core/display.nix
-    ../../modules/core/network.nix
-    ../../modules/core/system-packages.nix
-    ../../modules/core/users.nix
-    ../../modules/core/virtualization.nix
-    ../../modules/apps/scripts/scripts.nix
-    ../../modules/apps/passwords.nix
-    ../../modules/apps/comunicacion.nix
-    ../../modules/apps/direnv.nix
-    ../../modules/apps/fzf.nix
-    ../../modules/apps/git.nix
-    ../../modules/apps/kitty.nix
-    ../../modules/apps/media.nix
-    ../../modules/apps/navegadores.nix
-    ../../modules/apps/niri.nix
-    ../../modules/apps/nvim.nix
-    ../../modules/apps/obs.nix
-    ../../modules/apps/ranger.nix
-    ../../modules/apps/scripts/scripts.nix
-    ../../modules/apps/shell.nix
-    ../../modules/apps/sway.nix
-    ../../modules/apps/tmux.nix
-    ../../modules/apps/zsh.nix
-    ../../modules/services/audio.nix
-    ../../modules/services/bluetooth.nix
-    ../../modules/services/ssh.nix
-    ../../modules/services/tailscale.nix
+    ../../modules/default.nix
   ];
+  bluetooth.enable = true;
+  audio.enable = true;
+  arranque.enable = true;
+  pantalla.enable = true;
+  direnv.enable = true;
+  git = {
+    enable = true;
+    name = "aletheios42";
+    email = "";
+  };
+  media.enable = true;
+  obs.enable = true;
+  obsidian.enable = true;
+  passwords.enable = true;
+  escritorio = {
+    enable = true;
+    tailing = "sway";
+  };
+  virtualizacion = {
+    enable = true;
+    docker = true;
+    podman = true;
+    libvirtd = true;
+  };
+  comunicacion.enable = true;
+  navegadores = {
+    enable = true;
+    librewolf = true;
+    google-chrome = true;
+    qutebrowser = true;
+  };
+  editor.enable = true;
+  shell.enable = true;
 }
-

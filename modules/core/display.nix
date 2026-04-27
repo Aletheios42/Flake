@@ -1,14 +1,15 @@
-{pkgs, ...}:
+{ pkgs, lib, config, ...}:
 {
-  # --- CONSOLA & KEYMAP ---
-  console.earlySetup = true; #Aplica key repeat y dealy en las tty
-  console.keyMap = "es";
-  ## mirar si esto esta duplicado con i3.nix
+  options.pantalla.enable = lib.mkEnableOption "Carga nerd-font y pone la tty en español";
 
-    # --- FUENTES ---
-  fonts.packages = with pkgs; [
-    nerd-fonts.jetbrains-mono
-    nerd-fonts.fira-code
+  config = lib.mkIf (config.pantalla.enable) {
+    console.keyMap = "es";
+    console.earlySetup = true;
+
+  fonts.packages = [
+    pkgs.nerd-fonts.jetbrains-mono
+    pkgs.nerd-fonts.fira-code
   ];
 
+  };
 }
