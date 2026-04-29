@@ -18,8 +18,18 @@
       config = {
         user.name = config.git.name;
         user.email = config.git.email;
-        init.DefaultBranch = "master";
+        init.defaultBranch = "master";
         credential.helper = "store";
+
+        transfer.fsckObjects = true;
+        core.autocrlf = false;
+        core.editor = "nvim";
+        pull.rebase = true;
+        push.autoSetupRemote = true;
+        merge.conflictstyle = "diff3";
+        diff.colorMoved = "default";
+        core.untrackedCache = true;
+        core.fsmonitor = true;
       };
     };
   };

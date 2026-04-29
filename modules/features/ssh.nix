@@ -1,38 +1,45 @@
-{ ... }:
+{ lib, config, ... }:
 {
-  services.openssh = {
-    enable = true;
-    ports = [ 1234 ];
-    
-    settings = {
-      PasswordAuthentication = false;
-      KbdInteractiveAuthentication = false;
-      PermitRootLogin = "prohibit-password"; # Mejor que "no" si usas deploy-rs o colmena
-      
-      ClientAliveInterval = 120;
-      ClientAliveCountMax = 3;
+  options.mi_ssh = {
+    enable = lib.mkEnableOption "Activa el modulo ssh";
+    cliente.enable = lib.mkEnableOption "Activa el cliente ssh";
+    servidor = {
+      enable = lib.mkEnableOption "Activa el servidor ssh";
+      puertos = lib.mkOption {
+        type = lib.types.listOf lib.types.int;
+        description = "Lista de los puertos que puede usar ssh";
+      };
     };
-
-    hostKeys = [
-      {
-        path = "/etc/ssh/ssh_host_ed25519_key";
-        type = "ed25519";
-      }
-    ];
   };
 
-  programs.ssh = {
-    startAgent = true;
-    extraConfig = ''
-      Host *
-        ForwardAgent yes
-        AddKeysToAgent yes
-    '';
-  };
-
-  networking.firewall.allowedTCPPorts = [ 1234 ];
-
-  users.users.aletheios42.openssh.authorizedKeys.keys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKBNAFtwsoBJcft2fw5ds2h0QnShb9osnxWVyMsBnClH aletheios42"
-  ];
+  config = lib.mkIf config.mi_ssh.enable (lib.mkMerge [
+    (lib.mkIf config.mi_ssh.cliente.enable {
+      programs.ssh = {
+        startAgent = true;
+        extraConfig = ''
+          Host *
+            ForwardAgent yes
+            AddKeysToAgent yes
+        '';
+      };
+    })
+    (lib.mkIf config.mi_ssh.servidor.enable {
+      services.openssh = {
+        enable = true;
+        ports = config.mi_ssh.servidor.puertos;
+        settings = {
+          PasswordAuthentication = false;
+          KbdInteractiveAuthentication = false;
+          PermitRootLogin = "prohibit-password";
+          ClientAliveInterval = 120;
+          ClientAliveCountMax = 3;
+        };
+        hostKeys = [{
+          path = "/etc/ssh/ssh_host_ed25519_key";
+          type = "ed25519";
+        }];
+      };
+      networking.firewall.allowedTCPPorts = config.mi_ssh.servidor.puertos;
+    })
+  ]);
 }

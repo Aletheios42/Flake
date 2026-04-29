@@ -8,7 +8,7 @@ in
 {
   options.navegadores = {
     enable = lib.mkEnableOption "Modulo para selecionar los navegadores que quieres disponibles";
-    librewolf = lib.mkEnableOption "Activa librewolf con politicas";
+    librewolf = lib.mkEnableOption "Activa librewolf  politicas";
     google-chrome = lib.mkEnableOption "Activa librewolf con politicas";
     qutebrowser = lib.mkEnableOption "Activa librewolf con politicas";
   };
@@ -17,7 +17,7 @@ in
     {
       assertions = [{
         assertion = config.navegadores.librewolf || config.navegadores.google-chrome || config.navegadores.qutebrowser;
-        message = "Debes activar al menos un navegador";
+        message = "debes activar al menos un navegador";
       }];
     }
     {
@@ -75,6 +75,11 @@ in
 
     (lib.mkIf (config.navegadores.google-chrome) {
       nixpkgs.config.allowUnfree = true;
+      userPackages.browsers = [
+        (pkgs.google-chrome.override { 
+          commandLineArgs = "--force-dark-mode --enable-features=WebUIDarkMode"; 
+        })
+      ];
     })
 
     (lib.mkIf (config.navegadores.qutebrowser) {
@@ -85,9 +90,6 @@ in
       '';
       userPackages.browsers = [
         pkgs.qutebrowser
-        (pkgs.google-chrome.override { 
-          commandLineArgs = "--force-dark-mode --enable-features=WebUIDarkMode"; 
-        })
       ];
     })
   ]);

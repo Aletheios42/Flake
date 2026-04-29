@@ -5,8 +5,6 @@ C_GREEN="\e[1;32m"
 C_BLUE="\e[1;34m"
 C_YELLOW="\e[1;33m"
 C_RED="\e[1;31m"
-C_MAGENTA="\e[1;35m"
-C_GRAY="\e[0;37m"
 C_RESET="\e[0m"
 TREE_COLOR="-C" 
 

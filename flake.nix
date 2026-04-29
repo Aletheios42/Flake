@@ -13,6 +13,7 @@
   };
 
   outputs = { nixpkgs, nix-index-database, nvf, ...}: {
+    nixosModules.default = import ./modules/default.nix;
 
     nixosConfigurations = {
 
