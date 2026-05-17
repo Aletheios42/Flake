@@ -60,10 +60,10 @@
           };
         };
         luaConfigRC.treesitter-path = ''
-        local parser_dirs = vim.api.nvim_get_runtime_file("parser", true)
-        for _, dir in ipairs(parser_dirs) do
-          vim.opt.runtimepath:prepend(vim.fn.fnamemodify(dir, ":h"))
-        end
+          local parser_dirs = vim.api.nvim_get_runtime_file("parser", true)
+          for _, dir in ipairs(parser_dirs) do
+            vim.opt.runtimepath:prepend(vim.fn.fnamemodify(dir, ":h"))
+          end
         '';
 
         lsp = {
@@ -80,18 +80,6 @@
           html.enable = true; css.enable = true; svelte.enable = true; typescript.enable = true; php.enable = true;
           typst.enable = true; yaml.enable = true; markdown.enable = true;
         };
-
-        luaConfigRC.go-imports-only = ''
-        vim.api.nvim_create_autocmd("BufWritePre", {
-          pattern = "*.go",
-          callback = function()
-            vim.lsp.buf.code_action({
-              context = { only = { "source.organizeImports" } },
-              apply = true,
-            })
-          end,
-        })
-        '';
 
         luaConfigRC.no-auto-comment = ''
         vim.api.nvim_create_autocmd("BufEnter", {
@@ -132,91 +120,6 @@
             package = pkgs.vimPlugins.vim-tmux-navigator;
             setup = "";
           };
-          obsidian-nvim = {
-            package = pkgs.vimPlugins.obsidian-nvim;
-            setup = ''
-            require("obsidian").setup({
-              workspaces = {
-                {
-                  name = "segundo-cerebro",
-                  path = "~/Documentos/Segundo_Cerebro",
-                },
-              },
-
-              notes_subdir = "0_Inbox",
-              legacy_commands = false,
-
-              -- LOGICA DE NOMBRES
-              note_id_func = function(title)
-                if title ~= nil then
-                  return title
-                else
-                  return "Nota_" .. os.date("%Y-%m-%d_%H%M")
-                end
-              end,
-
-              note_path_func = function(spec)
-                local path = spec.dir / tostring(spec.id)
-                return path:with_suffix(".md")
-              end,
-
-              -- FRONTMATTER
-              frontmatter = {
-                func = function(note)
-                  local out = { 
-                    ["Creación"] = os.date("%Y-%m-%d %H:%M"),
-                    tags = note.tags or { "ToLink", "_Todo", "ToTag" },
-                    ["Descripción"] = "" 
-                  }
-                  if note.metadata ~= nil and not vim.tbl_isempty(note.metadata) then
-                    for k, v in pairs(note.metadata) do out[k] = v end
-                  end
-                  return out
-                end,
-              },
-
-              -- UI Y CONCEAL
-              ui = { enable = true },
-
-              -- ETIQUETAS
-              tags_helper = {
-                tag_prefix = "#",
-              },
-
-              templates = {
-                subdir = "3_Plantillas",
-                date_format = "%Y-%m-%d",
-                time_format = "%H:%M",
-              },
-
-              attachments = {
-                folder = "4_Multimedia",
-              },
-
-              -- SELECTOR
-              picker = {
-                name = "fzf-lua",
-                note_mappings = {
-                  insert_link = "<C-l>",
-                },
-              },
-
-              -- CORRECCIÓN: Mover sort_by y sort_reversed aquí dentro
-              search = {
-                sort_by = "modified",
-                sort_reversed = true,
-              },
-            })
-            '';
-          };
-          leap = {
-            package = pkgs.vimPlugins.leap-nvim;
-            setup = ''
-            require('leap').setup({})
-            vim.keymap.set({'n','x','o'}, 's',  '<Plug>(leap-forward)')
-            vim.keymap.set({'n','x','o'}, 'S',  '<Plug>(leap-backward)')
-            '';
-          };
           mini-files = {
             package = pkgs.vimPlugins.mini-nvim;
             setup = "require('mini.files').setup()";
@@ -228,9 +131,9 @@
           vimtex = {
             package = pkgs.vimPlugins.vimtex;
             setup = ''
-            vim.g.vimtex_view_method = 'zathura'
-            vim.g.vimtex_compiler_method = 'latexmk'
-            vim.g.vimtex_compiler_latexmk = { out_dir = '/tmp/vimtex' }
+              vim.g.vimtex_view_method = 'zathura'
+              vim.g.vimtex_compiler_method = 'latexmk'
+              vim.g.vimtex_compiler_latexmk = { out_dir = '/tmp/vimtex' }
             '';
           };
           markdown-preview = {
@@ -313,17 +216,6 @@
           # Minifile (<leader>e)
           { key = "<leader>e";  mode = "n"; action = "<cmd>lua require('mini.files').open()<CR>";                             desc = "Open mini.files"; }
           { key = "<leader>E";  mode = "n"; action = "<cmd>lua require('mini.files').open(vim.api.nvim_buf_get_name(0))<CR>"; desc = "Open mini.files (current file)"; }
-
-          # Segundo Cerebro
-          { key = "<leader>on"; mode = "n"; action = "<cmd>Obsidian new<CR>";          desc = "Crear nueva nota en Inbox"; }
-          { key = "<leader>oo"; mode = "n"; action = "<cmd>Obsidian quick_switch<CR>"; desc = "Selector rápido de notas"; }
-          { key = "<leader>os"; mode = "n"; action = "<cmd>Obsidian search<CR>";       desc = "Buscador de texto global (grep)"; }
-          { key = "<leader>ot"; mode = "n"; action = "<cmd>Obsidian tags<CR>";         desc = "Explorador de etiquetas (tags)"; }
-          { key = "<leader>oi"; mode = "n"; action = "<cmd>Obsidian template<CR>";     desc = "Insertar plantilla de nota"; }
-          { key = "<leader>ob"; mode = "n"; action = "<cmd>Obsidian backlinks<CR>";    desc = "Ver referencias a esta nota"; }
-          { key = "<leader>of"; mode = "n"; action = "<cmd>Obsidian follow_link<CR>";  desc = "Seguir enlace (WikiLink)"; }
-          { key = "<leader>od"; mode = "n"; action = "<cmd>Obsidian today<CR>";        desc = "Abrir nota del día"; }
-          { key = "<leader>ox"; mode = "n"; action = "<cmd>Obsidian checkbox<CR>";     desc = "Alternar estado de tarea"; }
         ];
       };
     };

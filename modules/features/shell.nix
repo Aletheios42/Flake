@@ -105,6 +105,9 @@ in
       }];
       userPackages.scripts = [ treeCat rfv ];
     }
+    {
+      environment.variables.TERM = "xterm-256color"; ## Para que los caracteres no se mezclen en sesiones ssh
+    }
     (lib.mkIf config.shell.kitty {
       userPackages.kitty = [
         (pkgs.symlinkJoin {
@@ -119,8 +122,9 @@ in
       ];
     })
     (lib.mkIf config.shell.cli {
-      userPackages.shell = [ pkgs.ripgrep pkgs.fd pkgs.fzf pkgs.bat pkgs.lsd ];
+      userPackages.shell = [ pkgs.ripgrep pkgs.tree pkgs.fd pkgs.fzf pkgs.bat pkgs.lsd ];
     })
+
     (lib.mkIf config.shell.zsh {
       programs.zsh = {
         enable = true;

@@ -18,18 +18,8 @@
     enable = true;
     hostname = "machine";
     timeZone = "Europe/Madrid";
+    puertosPermitidos = [ 80 443 8621 8889 8890 11111 ];
   };
-
-  # nginx = {
-  #   enable = true;
-  #   email = "admin@alejandropintosalcarazo.com";
-  # };
-
-  # vpn = {
-  #   enable = true;
-  #   usuario = "aletheios42";
-  #   subdominio = "vpn";
-  # };
 
   usuarios = {
     aletheios42 = {
@@ -101,6 +91,7 @@
   obsidian.enable = true;
 
   passwords = {
+    enable = true;
     keepassxc = true;
     # vaultwarden = {
     #   enable = true;
@@ -112,9 +103,19 @@
   navegadores = {
     enable = true;
     librewolf = true;
-    google-chrome = true;
+    chromiun = true;
+    tor = true;
     qutebrowser = true;
   };
+
+  lectura = {
+    enable = true;
+    zathura = true;
+    calibre = true;
+    koreader = true;
+  };
+
+  android.enable = true;
 
   ## quitar para machine
 #   syncthing = {

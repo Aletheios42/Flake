@@ -5,4 +5,4 @@
 * ¡¡¡ Investigar como exportar los modulos al flake!!!
 * hacer que tree-cat acepte rutas
 * parametrizar: dominio, ...
-* media: agregar obs, jellyfin, immich  y seprar entre cliente y server
+* Poner mejores carpetas para los scripts de patallazo

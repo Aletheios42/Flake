@@ -13,7 +13,7 @@
   config = lib.mkIf (config.syncthing.enable) {
     assertions = [{
       # interesante poner como assertion pong a [localhost](http://localhost) :80 :443
-      assertion = config.vars.dominio != "" && config.musica.subdominio != ""; ## Subdominio redundante porque no hay default pero bueno.
+      assertion = config.vars.dominio != "" && config.syncthing.subdominio != ""; ## Subdominio redundante porque no hay default pero bueno.
       message = "Dominio y Subdominio son necesarios";
     }];
     services.syncthing = {

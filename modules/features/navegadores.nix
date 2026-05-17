@@ -2,21 +2,23 @@
 let
   defaultBrowser = 
     if config.navegadores.librewolf then "firefox.desktop"
+    else if config.navegadores.chromiun then "qutebrowser.desktop"
     else if config.navegadores.qutebrowser then "qutebrowser.desktop"
-    else "google-chrome.desktop";
+    else "tor-browser";
 in
 {
   options.navegadores = {
     enable = lib.mkEnableOption "Modulo para selecionar los navegadores que quieres disponibles";
     librewolf = lib.mkEnableOption "Activa librewolf  politicas";
-    google-chrome = lib.mkEnableOption "Activa librewolf con politicas";
+    chromiun = lib.mkEnableOption "Activa chromiun";
+    tor = lib.mkEnableOption "Activa librewolf  politicas";
     qutebrowser = lib.mkEnableOption "Activa librewolf con politicas";
   };
 
   config = lib.mkIf (config.navegadores.enable) (lib.mkMerge [
     {
       assertions = [{
-        assertion = config.navegadores.librewolf || config.navegadores.google-chrome || config.navegadores.qutebrowser;
+        assertion = config.navegadores.librewolf || config.navegadores.tor || config.navegadores.qutebrowser;
         message = "debes activar al menos un navegador";
       }];
     }
@@ -29,6 +31,15 @@ in
         };
       };
     }
+
+    {
+      userPackages.navegadores = [pkgs.tor pkgs.tor-browser];
+    }
+
+    {
+      userPackages.navegadores = [ pkgs.chromium ];
+    }
+
     (lib.mkIf (config.navegadores.librewolf) {
       programs.firefox = {
         enable = true;
@@ -73,22 +84,13 @@ in
       environment.etc."librewolf/policies/policies.json".source = config.environment.etc."firefox/policies/policies.json".source;
     })
 
-    (lib.mkIf (config.navegadores.google-chrome) {
-      nixpkgs.config.allowUnfree = true;
-      userPackages.browsers = [
-        (pkgs.google-chrome.override { 
-          commandLineArgs = "--force-dark-mode --enable-features=WebUIDarkMode"; 
-        })
-      ];
-    })
-
     (lib.mkIf (config.navegadores.qutebrowser) {
       environment.etc."xdg/qutebrowser/config.py".text = ''
           config.load_autoconfig(False)
           c.colors.webpage.preferred_color_scheme = 'dark'
           c.colors.webpage.darkmode.enabled = True
       '';
-      userPackages.browsers = [
+      userPackages.navegadores = [
         pkgs.qutebrowser
       ];
     })

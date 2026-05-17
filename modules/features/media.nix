@@ -23,7 +23,7 @@
   config = lib.mkIf (config.media.enable) (lib.mkMerge [
     {
       assertions = [{
-        assertion = config.media.cliente || config.media.musica.enable || config.media.imagenes.enable ;
+        assertion = config.media.cliente || config.media.musica.enable || config.media.galeria.enable ;
         message = "Activa immich , jellyfin o paquetes de cliente";
       }];
     }
