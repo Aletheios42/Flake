@@ -17,12 +17,9 @@ let
 in
 {
   options.escritorio = {
-    enable = lib.mkEnableOption "activar sway o niri";
-    tailing = lib.mkOption {
-      type = lib.types.enum [ "sway" "niri" ];
-      default = "sway";
-      description = "Activa sway o niri";
-    };
+    enable = lib.mkEnableOption "activar sway";
+    sway = lib.mkEnableOption "Activa sway";
+    niri = lib.mkEnableOption "Activa niri";
   };
 
   config = lib.mkIf (config.escritorio.enable) (lib.mkMerge [
@@ -33,7 +30,7 @@ in
         extraPortals = [pkgs.xdg-desktop-portal-gtk ];
       };
     }
-    (lib.mkIf (config.escritorio.tailing == "sway") {
+    (lib.mkIf (config.escritorio.sway == true) {
       programs.sway.enable = true;
       programs.waybar.enable = true;
       programs.sway.extraPackages = [
@@ -154,7 +151,7 @@ in
       exec "${pkgs.dbus}/bin/dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP XDG_SESSION_TYPE NIXOS_OZONE_WL XCURSOR_THEME XCURSOR_SIZE; systemctl --user reset-failed && systemctl --user start sway-session.target && swaymsg -mt subscribe '[]' || true && systemctl --user stop sway-session.target"
       '';
     })
-    (lib.mkIf (config.escritorio.tailing == "niri") {
+    (lib.mkIf (config.escritorio.niri == true) {
       programs.niri.enable = true;
     })
   ]);

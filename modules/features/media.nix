@@ -29,16 +29,12 @@
     }
     (lib.mkIf (config.media.cliente) {
       userPackages.media = [
-        pkgs.grayjay
-        pkgs.musikcube pkgs.pavucontrol
-        pkgs.vlc pkgs.mpv pkgs.ffmpeg
+        pkgs.grayjay pkgs.musikcube pkgs.pavucontrol pkgs.vlc pkgs.mpv pkgs.ffmpeg
       ];
     })
-    ## jellyfin
     (lib.mkIf (config.media.musica.enable) {
       assertions = [{
-        # interesante poner como assertion pong a localhost :80 :443
-        assertion = config.vars.dominio != "" && config.media.musica.subdominio != ""; ## Subdominio redundante porque no hay default pero bueno.
+        assertion = config.vars.dominio != "" && config.media.musica.subdominio != "";
         message = "Dominio y Subdominio son necesarios";
       }];
       services.jellyfin = {
@@ -48,15 +44,25 @@
       services.nginx.virtualHosts."${config.media.musica.subdominio}.${config.vars.dominio}" = {
         forceSSL = true;
         enableACME = true;
-
         locations."/" = {
           proxyPass = "http://localhost:8096";
           proxyWebsockets = true;
+          extraConfig = lib.optionalString config.oauth2proxy.enable ''
+            auth_request /oauth2/auth;
+            error_page 401 = /oauth2/sign_in;
+          '';
+        };
+        locations."/oauth2/" = lib.mkIf config.oauth2proxy.enable {
+          proxyPass = "http://127.0.0.1:4180";
+          extraConfig = ''
+            proxy_set_header X-Scheme $scheme;
+            proxy_set_header X-Auth-Request-Redirect $request_uri;
+            proxy_set_header Host $host;
+          '';
         };
       };
     })
     (lib.mkIf (config.media.galeria.enable) {
-      ### immich
       services.immich = {
         enable = true;
         port = 2283;
@@ -72,7 +78,6 @@
         };
       };
     })
-    # Obs
     (lib.mkIf (config.media.obs.enable)  {
       userPackages.obs = [
         (pkgs.wrapOBS {

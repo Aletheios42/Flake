@@ -8,6 +8,7 @@
     };
     subdominio = lib.mkOption {
       type = lib.types.str;
+      default = "";
       description = "subdominio para acceder al servidor de nextcloud";
     };
   };

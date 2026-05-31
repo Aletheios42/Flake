@@ -7,9 +7,10 @@ C_YELLOW="\e[1;33m"
 C_RED="\e[1;31m"
 C_RESET="\e[0m"
 TREE_COLOR="-C" 
+TARGET_DIR="."  # Por defecto, el directorio actual
 
 mostrar_ayuda() {
-    echo -e "${C_GREEN}Uso:${C_RESET} $0 [opciones]"
+    echo -e "${C_GREEN}Uso:${C_RESET} $0 [opciones] [ruta]"
     echo ""
     echo -e "${C_BLUE}Descripción:${C_RESET}"
     echo "  Muestra el árbol de directorios y concatena el contenido de los archivos,"
@@ -28,10 +29,6 @@ mostrar_ayuda() {
 
 EXCLUDE_TREE=""
 EXCLUDE_FD=()
-
-if [[ "$#" -eq 0 ]]; then
-    : 
-fi
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
@@ -59,9 +56,18 @@ while [[ "$#" -gt 0 ]]; do
                 exit 1
             fi
             ;;
-        *)
+        -*)
             echo -e "${C_RED}Opción desconocida:${C_RESET} $1"
             mostrar_ayuda
+            ;;
+        *)
+            # Si no empieza con '-', lo tratamos como la ruta objetivo
+            if [ -d "$1" ]; then
+                TARGET_DIR="$1"
+            else
+                echo -e "${C_RED}Error:${C_RESET} '$1' no es un directorio válido."
+                exit 1
+            fi
             ;;
     esac
     shift
@@ -70,14 +76,15 @@ done
 generar_salida() {
     
     if [ -n "$EXCLUDE_TREE" ]; then
-        tree --charset=utf8 $TREE_COLOR -I "$EXCLUDE_TREE"
+        tree --charset=utf8 $TREE_COLOR -I "$EXCLUDE_TREE" "$TARGET_DIR"
     else
-        tree --charset=utf8 $TREE_COLOR
+        tree --charset=utf8 $TREE_COLOR "$TARGET_DIR"
     fi
 
     echo -e "\n--- CONTENIDO DE ARCHIVOS ---"
 
-    fd -t f "${EXCLUDE_FD[@]}" | while read -r f; do
+    # Pasamos TARGET_DIR como argumento a fd para que busque en esa ruta
+    fd -t f "${EXCLUDE_FD[@]}" . "$TARGET_DIR" | while read -r f; do
         echo -e "\n${C_BLUE}=== $f ===${C_RESET}\n"
         cat "$f"
         echo -e "\n----------------------------"

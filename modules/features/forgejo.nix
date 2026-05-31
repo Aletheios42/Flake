@@ -3,6 +3,7 @@
     enable = lib.mkEnableOption "Activa un servidor de forjeo";
     subdominio = lib.mkOption {
       type = lib.types.str;
+      default = "";
       description = "subdominio desde el que acceder al servidor";
     };
   };

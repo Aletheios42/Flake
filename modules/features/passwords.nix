@@ -14,7 +14,6 @@
         description = "subdominio asociado a tu servidor";
       };
     };
-
   };
 
   config = lib.mkIf (config.passwords.enable) (lib.mkMerge [
@@ -38,7 +37,6 @@
           DOMAIN = "https://${config.passwords.vaultwarden.subdominio}.${config.vars.dominio}";
           SIGNUPS_ALLOWED = false;
           ROCKET_PORT = 8222;
-          ADMIN_TOKEN = "contraseña de broma";
         };
       };
       services.nginx.virtualHosts."${config.passwords.vaultwarden.subdominio}.${config.vars.dominio}" = {
@@ -47,6 +45,18 @@
         locations."/" = {
           proxyPass = "http://127.0.0.1:8222";
           proxyWebsockets = true;
+          extraConfig = lib.optionalString config.oauth2proxy.enable ''
+            auth_request /oauth2/auth;
+            error_page 401 = /oauth2/sign_in;
+          '';
+        };
+        locations."/oauth2/" = lib.mkIf config.oauth2proxy.enable {
+          proxyPass = "http://127.0.0.1:4180";
+          extraConfig = ''
+            proxy_set_header X-Scheme $scheme;
+            proxy_set_header X-Auth-Request-Redirect $request_uri;
+            proxy_set_header Host $host;
+          '';
         };
       };
     })

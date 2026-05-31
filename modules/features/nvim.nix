@@ -160,7 +160,7 @@
           { key = "<F9>"; mode = "n"; action = ":set hlsearch!<CR>";        desc = "Toggle hlsearch"; }
           { key = "<F10>"; mode = "n"; action = ":noh<CR>";                 desc = "Clear search highlight"; }
           { key = "<F11>"; mode = "n"; action = ":set spell!<CR>";                         desc = "Toggle spell"; }
-          { key = "<F12>"; mode = "n"; action = "<cmd>lua local c = vim.diagnostic.config; if c().virtual_lines then c({virtual_lines=false}) else c({virtual_lines=true}) end<CR>";  desc = "Toggle virtual lines"; }
+          { key = "<F12>"; mode = "n"; action = "<cmd>lua local d = vim.diagnostic; if d.is_disabled(0) then d.enable(0) else d.disable(0) end<CR>"; desc = "Toggle diagnostics"; }
 
           # Buffers (<leader>b)
           { key = "<leader>bl"; mode = "n"; action = "<cmd>lua require('fzf-lua').buffers()<CR>";  desc = "List buffers"; }

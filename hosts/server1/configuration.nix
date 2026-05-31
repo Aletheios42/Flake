@@ -1,12 +1,20 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 {
   imports = [
     ../../modules/default.nix
     ./hardware-configuration.nix
+    ./disk.nix
   ];
 
   vars = {
     dominio = "alejandropintosalcarazo.com";
+  };
+
+  impermanencia.enable = true;
+  
+  mi_sops = {
+    enable = true;
+    secretsFile = ../../secrets/server1.yaml;
   };
 
   arranque = {
@@ -17,9 +25,9 @@
   red = {
     enable = true;
     hostname = "server1";
-    timeZone = "Europe/Madrid";
     firewall = true;
-    puertosPermitidos = [ 80 443 ];
+    puertosPermitidos = [ 80 443 25 143 465 587 993 ];
+    timeZone = "Europe/Madrid";
   };
 
   sistema.enable = true;
@@ -36,6 +44,39 @@
   nginx = {
     enable = true;
     email = "admin@alejandropintosalcarazo.com";
+  };
+
+  mi_mailserver = {
+    enable = true;
+    loginAccounts = {
+      "admin@alejandropintosalcarazo.com" = {
+        hashedPasswordFile = config.sops.secrets."mailserver/admin_pass".path;
+        aliases = [ "postmaster@alejandropintosalcarazo.com" ];
+      };
+    };
+  };
+
+  monitoring = {
+    enable = true;
+    subdominio = "observe";
+  };
+
+  zitadel = {
+    enable = true;
+    subdominio = "auth";
+  };
+
+  oauth2proxy.enable = true;
+
+  homepage = {
+    enable = true;
+    subdominio = "home";
+  };
+
+  firefly = {
+    enable = true;
+    subdominio = "presupuesto";
+    usuario = "aletheios42";
   };
 
   vpn = {
@@ -78,7 +119,6 @@
   };
 
   documentacion.enable = true;
-
   bluetooth.enable = true;
   audio.enable = true;
   pantalla.enable = true;
@@ -96,30 +136,12 @@
     obs.enable = true;
   };
 
-  obsidian.enable = true;
-
   passwords = {
     enable = true;
     vaultwarden = {
       enable = true;
       subdominio = "vaultwarden";
     };
-  };
-
-  comunicacion.enable = true;
-  navegadores = {
-    enable = true;
-    librewolf = true;
-    chromiun = true;
-    tor = true;
-    qutebrowser = true;
-  };
-
-  lectura = {
-    enable = true;
-    zathura = true;
-    calibre = true;
-    koreader = true;
   };
 
   android.enable = true;
@@ -140,10 +162,4 @@
     usuario = "aletheios42";
     subdominio = "cloud";
   };
-  # firefly = {
-  #   enable = true;
-  #   subdominio = "presupuesto";
-  #   usuario = "aletheios42";
-  # };
-
 }

@@ -1,0 +1,12 @@
+# To obtain the server's age key after first boot:
+# ssh-keyscan <server1_ip> | ssh-to-age
+# Paste the resulting age1... public key below.
+
+keys:
+  - &server1_age age1_placeholder_replace_with_actual_server1_age_key
+
+creation_rules:
+  - path_regex: secrets/.*\.yaml$
+    key_groups:
+      - age:
+          - *server1_age

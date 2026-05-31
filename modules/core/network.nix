@@ -10,11 +10,16 @@
     servidoresDns = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = ["9.9.9.9" "1.1.1.1"];
-      description = "Puertos abiertos en el firewall";
+      description = "Servidores DNS";
     }; 
+    firewall = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Enciende o apaga el firewall";
+    };
     puertosPermitidos = lib.mkOption {
       type = lib.types.listOf lib.types.int;
-      default = [80 443];
+      default = [80 443 1234];
       description = "Puertos abiertos en el firewall";
     }; 
     timeZone = lib.mkOption {
@@ -44,12 +49,12 @@
       hostName = config.red.hostname;
       nameservers = config.red.servidoresDns;
       firewall = {
-        enable = true;
+        enable = config.red.firewall;
         allowedTCPPorts = config.red.puertosPermitidos;
       };
       networkmanager = {
         enable = true;
-        dns = "none"; # evita que nm sobrescriba mis nameservers de dns de dns
+        dns = "none";
       };
     };
     time.timeZone = config.red.timeZone;

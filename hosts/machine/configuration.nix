@@ -2,6 +2,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ./disk.nix
     ../../modules/default.nix
   ];
 
@@ -9,10 +10,15 @@
     dominio = "alejandropintosalcarazo.com";
   };
 
+  impermanencia = {
+    enable = true;
+    dispositivo = "/dev/mapper/crypted";
+  };
+
   sistema.enable = true;
   arranque = {
     enable = true;
-    loader = "dual-boot";
+    loader = "monolito";
   };
   red = {
     enable = true;
@@ -52,7 +58,7 @@
 
   escritorio = {
     enable = true;
-    tailing = "sway";
+    sway = true;
   };
 
   virtualizacion = {
@@ -74,17 +80,9 @@
   audio.enable = true;
   pantalla.enable = true;
 
-  media= {
+  media = {
     enable = true;
     cliente = true;
-    # musica = {
-    #   enable = true;
-    #   subdominio = "jellyfin";
-    # };
-    # galeria = {
-    #   enable = true;
-    #   subdominio = "fotos";
-    # };
     obs.enable = true;
   };
 
@@ -93,13 +91,18 @@
   passwords = {
     enable = true;
     keepassxc = true;
-    # vaultwarden = {
-    #   enable = true;
-    #   subdominio = "vaultwarden";
-    # };
   };
 
-  comunicacion.enable = true;
+  comunicacion = {
+    enable = true;
+    discord = true;
+    whatsie = true;
+    slack = true;
+    telegram = true;
+    thunderbird = true;
+    weechat = true;
+    element = true;
+  };
   navegadores = {
     enable = true;
     librewolf = true;
@@ -116,27 +119,4 @@
   };
 
   android.enable = true;
-
-  ## quitar para machine
-#   syncthing = {
-#     enable = true;
-#     usuario = "aletheios42";
-#     subdominio = "syncthing";
-#   };
-#
-#   forgejo = {
-#     enable = true;
-#     subdominio = "git";
-#   };
-#
-#   nextcloud = {
-#     enable = true;
-#     usuario = "aletheios42";
-#     subdominio = "cloud";
-#   };
-  # firefly = {
-  #   enable = true;
-  #   subdominio = "presupuesto";
-  #   usuario = "aletheios42";
-  # };
 }

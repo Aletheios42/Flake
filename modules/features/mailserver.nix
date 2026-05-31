@@ -1,27 +1,47 @@
-{ config, ... }: {
-  # mailserver = {
-  #   enable = true;
-  #   fqdn = "mail.alejandropintosalcarazo.com";
-  #   domains = [ "alejandropintosalcarazo.com" ];
-  #   loginAccounts = {
-  #     "aletheios42@alejandropintosalcarazo.com" = {
-  #       hashedPasswordFile = config.sops.secrets."mailserver/aletheios42Pass".path;
-  #       aliases = [ "admin@alejandropintosalcarazo.com" ];
-  #     };
-  #   };
-  #   certificate = {
-  #     useACMEHost = "mail.alejandropintosalcarazo.com";
-  #   };
-  #   enableImap = true;
-  #   enableImapSsl = true;
-  #   enableSubmission = true;
-  #   enableSubmissionSsl = true;
-  # };
+{ lib, config, ... }:
+{
+  options.mi_mailserver = {
+    enable = lib.mkEnableOption "Activa el servidor de correo";
+    loginAccounts = lib.mkOption {
+      type = lib.types.attrsOf (lib.types.submodule {
+        options = {
+          hashedPasswordFile = lib.mkOption { type = lib.types.str; };
+          aliases = lib.mkOption { type = lib.types.listOf lib.types.str; default = []; };
+        };
+      });
+      description = "Cuentas de correo del servidor";
+    };
+  };
 
-  # DNS records necesarios (añadir en tu registrar):
-  # MX  alejandropintosalcarazo.com → mail.alejandropintosalcarazo.com
-  # A   mail.alejandropintosalcarazo.com → TU_IP
-  # TXT alejandropintosalcarazo.com → "v=spf1 mx ~all"
-  # TXT _dmarc → "v=DMARC1; p=quarantine; rua=mailto:admin@alejandropintosalcarazo.com"
-  # DKIM: obtener clave tras primer nixos-rebuild en /var/dkim/
+  config = lib.mkIf config.mi_mailserver.enable {
+    assertions = [
+      {
+        assertion = config.vars.dominio != "";
+        message = "El dominio debe estar configurado para usar el mailserver.";
+      }
+      {
+        assertion = config.mi_mailserver.loginAccounts != {};
+        message = "Debe haber al menos una cuenta de correo configurada.";
+      }
+    ];
+
+    mailserver = {
+      enable = true;
+      fqdn = "mail.${config.vars.dominio}";
+      domains = [ config.vars.dominio ];
+      
+      loginAccounts = config.mi_mailserver.loginAccounts;
+
+      certificateScheme = "acme-nginx";
+
+      enableImap = true;
+      enableImapSsl = true;
+      enableSubmission = true;
+      enableSubmissionSsl = true;
+
+      virusScanning = false;
+      
+      enableNixpkgsReleaseCheck = false;
+    };
+  };
 }
