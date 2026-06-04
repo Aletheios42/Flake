@@ -10,6 +10,7 @@
   };
 
   config = lib.mkIf config.zitadel.enable {
+    sops.secrets."zitadel/master_key" = {};
     services.postgresql = {
       enable = true;
       ensureDatabases = [ "zitadel" ];

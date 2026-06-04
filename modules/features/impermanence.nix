@@ -2,7 +2,7 @@
 let
   wipeScript = ''
     mkdir -p /btrfs_tmp
-    mount /dev/disk/by-label/root /btrfs_tmp
+    mount ${config.impermanencia.dispositivo} /btrfs_tmp
     if [[ -e /btrfs_tmp/@ ]]; then
       mkdir -p /btrfs_tmp/old_roots
       timestamp=$(date --date="@$(stat -c %y /btrfs_tmp/@)" "+%Y-%m-%d_%H:%M:%S")
@@ -50,12 +50,7 @@ in
       script = wipeScript;
     };
 
-    fileSystems."/persist" = {
-      device = "/dev/disk/by-label/root";
-      fsType = "btrfs";
-      options = [ "subvol=@persist" "compress=zstd" "noatime" ];
-      neededForBoot = true;
-    };
+    fileSystems."/persist".neededForBoot = true;
 
     environment.persistence."/persist" = {
       hideMounts = true;

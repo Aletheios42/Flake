@@ -15,6 +15,9 @@
   };
 
   config = lib.mkIf config.monitoring.enable {
+    sops.secrets."openobserve/root_password" = {};
+    sops.secrets."openobserve/secret_key" = {};
+
     users.users.openobserve = {
       isSystemUser = true;
       group = "openobserve";

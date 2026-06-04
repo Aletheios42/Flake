@@ -18,23 +18,37 @@
               mountpoint = "/boot";
             };
           };
-          root = {
+          luks = {
             size = "100%";
             content = {
-              type = "btrfs";
-              extraArgs = [ "-f" ];
-              subvolumes = {
-                "@" = {
-                  mountpoint = "/";
-                };
-                "@persist" = {
-                  mountpoint = "/persist";
-                };
-                "@nix" = {
-                  mountpoint = "/nix";
-                  mountOptions = [ "compress=zstd" "noatime" ];
+              type = "luks";
+              name = "crypted"; # Este será el nombre en /dev/mapper/crypted
+              # Si usas SSD, permite discard (TRIM) a través de LUKS
+              settings.allowDiscards = true;
+
+              content = {
+                type = "btrfs";
+                extraArgs = [ "-f" ];
+                subvolumes = {
+                  "@" = {
+                    mountpoint = "/";
+                  };
+                  "@persist" = {
+                    mountpoint = "/persist";
+                  };
+                  "@nix" = {
+                    mountpoint = "/nix";
+                    mountOptions = [ "compress=zstd" "noatime" ];
+                  };
                 };
               };
+            };
+          };
+          swap = {
+            size = "4G";
+            content = {
+              type = "swap";
+              resumeDevice = true;
             };
           };
         };

@@ -20,12 +20,12 @@
         message = "Dominio, subdominio y usuario deben estar especificados.";
       }
     ];
+    sops.secrets."firefly/app_key" = {};
 
-    # Explicitly create the PostgreSQL database and user since Firefly 
-    # doesn't have the abstract `database.createLocally` option.
     services.postgresql = {
       enable = true;
-      ensureDatabases = [ "firefly" ];
+      # La BD debe llamarse igual que el usuario si le damos ownership
+      ensureDatabases = [ "firefly-iii" ];
       ensureUsers = [{
         name = "firefly-iii";
         ensureDBOwnership = true;
@@ -41,7 +41,8 @@
         SITE_OWNER = "admin@${config.vars.dominio}";
         DB_CONNECTION = "pgsql";
         DB_HOST = "/run/postgresql";
-        DB_DATABASE = "firefly";
+        # Apuntamos a la nueva BD renombrada
+        DB_DATABASE = "firefly-iii";
         DB_USERNAME = "firefly-iii";
       };
     };

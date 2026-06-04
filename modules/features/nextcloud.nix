@@ -19,6 +19,9 @@
       assertion = config.vars.dominio != "" && config.nextcloud.subdominio != "" && config.nextcloud.usuario != ""; ## reundante la comprobacion del subdominoi pero bueno
       message = "necesitas un dominio, subdominio y usuario para nextlcoud";
     }];
+
+    sops.secrets."nextcloud/admin_pass" = {};
+
     services.nextcloud = {
       enable = true;
       hostName = "${config.nextcloud.subdominio}.${config.vars.dominio}";

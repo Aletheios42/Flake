@@ -48,7 +48,7 @@
 
   mi_mailserver = {
     enable = true;
-    loginAccounts = {
+    accounts = {
       "admin@alejandropintosalcarazo.com" = {
         hashedPasswordFile = config.sops.secrets."mailserver/admin_pass".path;
         aliases = [ "postmaster@alejandropintosalcarazo.com" ];
@@ -118,9 +118,6 @@
     email = "";
   };
 
-  documentacion.enable = true;
-  bluetooth.enable = true;
-  audio.enable = true;
   pantalla.enable = true;
 
   media= {
@@ -144,8 +141,6 @@
     };
   };
 
-  android.enable = true;
-
   syncthing = {
     enable = true;
     usuario = "aletheios42";
@@ -162,4 +157,7 @@
     usuario = "aletheios42";
     subdominio = "cloud";
   };
+
+  rss.enable = true;
+
 }

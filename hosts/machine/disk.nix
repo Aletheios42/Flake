@@ -25,7 +25,7 @@
               name = "crypted"; # Este será el nombre en /dev/mapper/crypted
               # Si usas SSD, permite discard (TRIM) a través de LUKS
               settings.allowDiscards = true;
-              
+
               content = {
                 type = "btrfs";
                 extraArgs = [ "-f" ];
@@ -42,6 +42,13 @@
                   };
                 };
               };
+            };
+          };
+          swap = {
+            size = "4G";
+            content = {
+              type = "swap";
+              resumeDevice = true;
             };
           };
         };
