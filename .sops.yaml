@@ -1,10 +1,16 @@
 keys:
-  - &admin_aletheios age1pggxm6nxeurz7ajp8a8elhfcmgp8lrshtf3dmuxjycxpsg4suqsqpkv07r
-  - &server1 age1t0m37muuydtmqj9zkduxjc7rsjgq9zvjaahf6rngveq4nnzlapdqnwgqq5
+  - &admin   age1ge7pn79qjpecf29qtxwrxuen2rxd0u9388hvgldeax87enf8x9xql3muft
+  - &server1 age1xtawun70klshm7c2gvc7lth0gj5062y54sw68mfud9t4qxdz0gysgtpnfv
+  - &machine age1gqvp4ks4cdsfg607fykzc49slqasetmegrf5k95ervruecccku9s8vd2tm
 
 creation_rules:
-  - path_regex: secrets/.*\.yaml$
+  - path_regex: secrets/server1\.yaml$
     key_groups:
       - age:
-          - *admin_aletheios
+          - *admin
           - *server1
+  - path_regex: secrets/machine\.yaml$
+    key_groups:
+      - age:
+          - *admin
+          - *machine

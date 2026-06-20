@@ -10,8 +10,11 @@
     dominio = "alejandropintosalcarazo.com";
   };
 
-  impermanencia.enable = true;
-  
+  impermanencia = {
+    enable = true;
+    dispositivo = "/dev/mapper/crypted";
+  };
+
   mi_sops = {
     enable = true;
     secretsFile = ../../secrets/server1.yaml;
@@ -31,10 +34,11 @@
   };
 
   sistema.enable = true;
+  sistema.version = "26.05";
 
   usuarios = {
     aletheios42 = {
-      hashedPassword = "$y$j9T$xJH0zJRapD/u6RqPiYYkV1$UCRHx50IP/6T2.6CQr5VLGBVakzrQn5plcgUayvLOF1";
+      hashedPasswordFile = config.sops.secrets."users/aletheios42_password".path;
       llavesSsh = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFwPpoIGjOdnehdg/bI3KVsdirAUygqJOoyiK301W2h0 aletheios42" ];
       grupos = [ "wheel" "networkmanager" "video" "input" "audio" "docker" "uucp" "dialout" "libvirtd" ];
       shell = pkgs.zsh;
@@ -59,6 +63,7 @@
   monitoring = {
     enable = true;
     subdominio = "observe";
+    port = 5080;
   };
 
   zitadel = {
@@ -115,7 +120,6 @@
   git = {
     enable = true;
     name = "aletheios42";
-    email = "";
   };
 
   pantalla.enable = true;
@@ -158,6 +162,9 @@
     subdominio = "cloud";
   };
 
-  rss.enable = true;
+  rss = {
+    enable = true;
+    subdominio = "rss";
+  };
 
 }

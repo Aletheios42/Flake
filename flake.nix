@@ -21,34 +21,31 @@
     simple-nixos-mailserver.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { nixpkgs, nix-index-database, nvf, impermanence, disko, sops-nix, simple-nixos-mailserver, ...}: {
+  outputs = { nixpkgs, nix-index-database, nvf, impermanence, disko, sops-nix, simple-nixos-mailserver, ...}:
+  let
+    commonModules = [
+      nix-index-database.nixosModules.nix-index
+      nvf.nixosModules.default
+      impermanence.nixosModules.impermanence
+      disko.nixosModules.disko
+      sops-nix.nixosModules.sops
+      # simple-nixos-mailserver se incluye en todos los hosts porque mailserver.nix
+      # referencia config.mailserver.* y el sistema de módulos necesita que esté definido.
+      # Está guardado con mkEnableOption así que no activa nada en machine.
+      simple-nixos-mailserver.nixosModules.default
+    ];
+  in {
     nixosModules.default = import ./modules/default.nix;
 
     nixosConfigurations = {
       machine = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        modules = [
-          ./hosts/machine/configuration.nix
-          nix-index-database.nixosModules.nix-index
-          nvf.nixosModules.default
-          impermanence.nixosModules.impermanence
-          disko.nixosModules.disko # <--- VUELVE A AÑADIR DISKO AQUÍ
-          sops-nix.nixosModules.sops
-          simple-nixos-mailserver.nixosModule
-        ];
+        modules = [ ./hosts/machine/configuration.nix ] ++ commonModules;
       };
 
       server1 = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        modules = [
-          ./hosts/server1/configuration.nix
-          nix-index-database.nixosModules.nix-index
-          nvf.nixosModules.default
-          impermanence.nixosModules.impermanence
-          disko.nixosModules.disko
-          sops-nix.nixosModules.sops
-          simple-nixos-mailserver.nixosModule
-        ];
+        modules = [ ./hosts/server1/configuration.nix ] ++ commonModules;
       };
     };
   };

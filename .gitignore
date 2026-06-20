@@ -1,0 +1,19 @@
+# Secret keys (never commit these)
+secrets/keys/
+
+# SOPS backup files
+*.bak
+
+# Temporary files
+*.tmp
+*~
+
+# Editor files
+*.swp
+*.swo
+
+# Nix result links
+result
+result-*
+
+TODO.md

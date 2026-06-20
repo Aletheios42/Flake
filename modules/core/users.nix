@@ -1,6 +1,5 @@
 { pkgs, lib, config, ... }:
 {
-
   options.userPackages = lib.mkOption {
     type = lib.types.attrsOf (lib.types.listOf lib.types.package);
     default = {};
@@ -8,9 +7,9 @@
   options.usuarios = lib.mkOption {
     type = lib.types.attrsOf ( lib.types.submodule {
       options = {
-        hashedPassword = lib.mkOption {
+        hashedPasswordFile = lib.mkOption {
           type = lib.types.str;
-          description = "Contraseña hasheada del usuario";
+          description = "Ruta al archivo con la contraseña hasheada del usuario (gestionado por sops)";
         };
         grupos = lib.mkOption {
           type = lib.types.listOf (lib.types.str);
@@ -38,16 +37,23 @@
       assertion = lib.any (u: lib.elem "wheel" u.grupos) (lib.attrValues config.usuarios);
       message = "Debe haber al menos un usuario con grupo wheel";
     }];
+
     users.groups = lib.mapAttrs (nombre: _: {}) config.usuarios;
     users.mutableUsers = false;
+
     users.users = lib.mapAttrs (nombre: userConf: {
-      hashedPassword = userConf.hashedPassword;
+      hashedPasswordFile = userConf.hashedPasswordFile;
       group = nombre;
       extraGroups = userConf.grupos;
       shell = userConf.shell;
       isNormalUser = true;
       openssh.authorizedKeys.keys = userConf.llavesSsh;
       packages = lib.flatten (lib.attrValues config.userPackages);
+    }) config.usuarios;
+
+    sops.secrets = lib.mapAttrs' (nombre: _: {
+      name = "users/${nombre}_password";
+      value = {};
     }) config.usuarios;
   };
 }
