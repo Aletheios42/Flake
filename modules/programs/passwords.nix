@@ -36,6 +36,9 @@
         LockDatabaseMinimize=false
         LockDatabaseScreenLock=false
         LockDatabaseOnUserSwitch=false
+
+        [SSHAgent]
+        Enabled=true
       '';
       myImpermanence.users.${config.vars.usuarioPrincipal} = {
         directories = [ ".config/keepassxc" ];

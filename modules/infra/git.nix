@@ -1,25 +1,15 @@
 { pkgs, lib, config, ... }:
-let
-  forge-cli = pkgs.stdenv.mkDerivation {
-    name = "forge-0.5.1";
-    src = pkgs.fetchurl {
-      url    = "https://github.com/git-pkgs/forge/releases/download/v0.5.1/forge_0.5.1_linux_amd64.tar.gz";
-      sha256 = "18n3rz6pqk4iarmk7gm6kkd4b9sxw7hx4n497c5rgycd6kn85ip9";
-    };
-    phases = [ "installPhase" ];
-    installPhase = ''
-      mkdir -p $out/bin
-      tar xzf $src
-      cp forge $out/bin/forge
-    '';
-  };
-in
 {
   options.git = {
     enable = lib.mkEnableOption "Habilita git , requiere de tu email y usuario";
     name = lib.mkOption {
       type = lib.types.str;
       description = "Tu usuario de github";
+    };
+    githubToken = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Si activar el secreto github/token para credential store";
     };
   };
 
@@ -30,15 +20,14 @@ in
     }];
 
     sops.secrets."git/email" = {};
-
-    userPackages.git = [ forge-cli ];
+    sops.secrets."github/token" = lib.mkIf config.git.githubToken {};
 
     programs.git = {
       enable = true;
       config = {
         user.name = config.git.name;
         init.defaultBranch = "master";
-        credential.helper = "store";
+        credential.helper = "store --file=${config.vars.home}/.config/git/credentials";
 
         transfer.fsckObjects = true;
         core.autocrlf = false;
@@ -52,17 +41,31 @@ in
       };
     };
 
-    system.activationScripts.gitConfig = ''
+    system.activationScripts.gitConfig = {
+      deps = [ "persist-files" "users" "setupSecrets" ];
+      text = ''
       mkdir -p ${config.vars.home}/.config/git
       email=$(${pkgs.coreutils}/bin/cat ${config.sops.secrets."git/email".path} 2>/dev/null || echo "INSERT_EMAIL")
+      ${lib.optionalString config.git.githubToken ''
+      token=$(${pkgs.coreutils}/bin/cat ${config.sops.secrets."github/token".path} 2>/dev/null || echo "")
+      ''}
 
       ${pkgs.coreutils}/bin/cat > ${config.vars.home}/.config/git/config <<EOF
       [user]
           email = "$email"
       EOF
 
+      # Pre-popular credenciales git para GitHub (credential.helper = store)
+      ${lib.optionalString config.git.githubToken ''
+      if [ -n "$token" ]; then
+        echo "https://${config.git.name}:$token@github.com" > ${config.vars.home}/.config/git/credentials
+      fi
+      ''}
+
       ${pkgs.coreutils}/bin/chown -R ${config.vars.usuarioPrincipal}:${config.vars.usuarioPrincipal} ${config.vars.home}/.config/git
+      ${pkgs.coreutils}/bin/chown ${config.vars.usuarioPrincipal}:${config.vars.usuarioPrincipal} ${config.vars.home}/.config/git/credentials 2>/dev/null || true
     '';
+    };
 
     myImpermanence.users.${config.vars.usuarioPrincipal} = {
       directories = [ ".config/git" ];

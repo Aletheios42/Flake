@@ -1,6 +1,6 @@
 keys:
-  - &admin   age1ge7pn79qjpecf29qtxwrxuen2rxd0u9388hvgldeax87enf8x9xql3muft
-  - &server1 age1xtawun70klshm7c2gvc7lth0gj5062y54sw68mfud9t4qxdz0gysgtpnfv
+  - &admin   age1qpdtj40mumh690hcjd3uwjz6ushhpmeed5lwngc8kf5ylcyh5skqg33py6
+  - &server1 age14h6cpmyt8z5d66kyyv6c8n9l5rjdcwcc6h8fsnnzk95vxf5hnvls2tvfk8
   - &machine age1gqvp4ks4cdsfg607fykzc49slqasetmegrf5k95ervruecccku9s8vd2tm
 
 creation_rules:

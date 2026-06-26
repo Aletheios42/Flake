@@ -7,9 +7,9 @@
   options.usuarios = lib.mkOption {
     type = lib.types.attrsOf ( lib.types.submodule {
       options = {
-        hashedPasswordFile = lib.mkOption {
+        hashedPassword = lib.mkOption {
           type = lib.types.str;
-          description = "Ruta al archivo con la contraseña hasheada del usuario (gestionado por sops)";
+          description = "Hash de la contraseña del usuario (generado con mkpasswd -m sha-512)";
         };
         grupos = lib.mkOption {
           type = lib.types.listOf (lib.types.str);
@@ -42,18 +42,13 @@
     users.mutableUsers = false;
 
     users.users = lib.mapAttrs (nombre: userConf: {
-      hashedPasswordFile = userConf.hashedPasswordFile;
+      hashedPassword = userConf.hashedPassword;
       group = nombre;
       extraGroups = userConf.grupos;
       shell = userConf.shell;
       isNormalUser = true;
       openssh.authorizedKeys.keys = userConf.llavesSsh;
       packages = lib.flatten (lib.attrValues config.userPackages);
-    }) config.usuarios;
-
-    sops.secrets = lib.mapAttrs' (nombre: _: {
-      name = "users/${nombre}_password";
-      value = {};
     }) config.usuarios;
   };
 }

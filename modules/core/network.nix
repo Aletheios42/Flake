@@ -55,8 +55,14 @@
       networkmanager = {
         enable = true;
         dns = "none";
+        wifi.powersave = false;
       };
     };
     time.timeZone = config.red.timeZone;
+
+    myImpermanence.system.directories = [
+      "/etc/NetworkManager/system-connections"
+      "/var/lib/NetworkManager"
+    ];
   };
 }

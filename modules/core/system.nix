@@ -18,8 +18,8 @@
     nix.settings.download-buffer-size = 524288000; # 500MB
     nix.settings.experimental-features = ["nix-command" "flakes"];
     nixpkgs.config.allowUnfree = true;
-
     security.sudo.wheelNeedsPassword = false;
+
     programs.nix-index.enable = true;
     programs.nix-index-database.comma.enable = true;
     programs.nix-index.enableZshIntegration = true;

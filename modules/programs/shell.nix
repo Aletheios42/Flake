@@ -1,23 +1,25 @@
 { pkgs, lib, config, ... }:
 let
   kittyConf = pkgs.writeText "kitty.conf" ''
-    scrollback_line -1
-    enable_audio_bell = no
+    scrollback_lines -1
+    enable_audio_bell no
+    confirm_os_window_close 0
+    map shift+enter send_text all \x1b[13;2u
   '';
   tmuxConf = pkgs.writeText "tmux.conf" ''
     set -g clock-mode-style 24
     set -sg escape-time 10
     set -g @plugin 'tmux-plugins/tmux-resurrect'
+    set -g @plugin 'tmux-plugins/tmux-continuum'
+    set -g @continuum-restore 'on'
+    set -g @continuum-save-interval '15'
   '';
-  # Configuración zsh: fzf + alt-r widget. Pertenece al bloque zsh, no al de direnv.
-  zshConf = ''
+  # Antes de oh-my-zsh (plugins, funciones, variables de entorno)
+  zshPreamble = ''
     zstyle ':completion:*' menu no
     zstyle ':completion:*' use-cache on
     zstyle ':completion:*' cache-path ~/.zcompcache
     source ${pkgs.zsh-fzf-tab}/share/fzf-tab/fzf-tab.plugin.zsh
-
-    # fzf shell integration (requiere shell.cli para tener fzf/rg/fd)
-    eval "$(fzf --zsh)"
 
     export FZF_DEFAULT_COMMAND="rg --files --hidden --smart-case"
     export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
@@ -40,6 +42,11 @@ let
       zle redisplay
     }
     zle -N alt-r-widget
+  '';
+
+  # Despues de oh-my-zsh (keybindings, se sobreescriben si van antes)
+  zshBindings = ''
+    eval "$(fzf --zsh)"
     bindkey "^[r" alt-r-widget
   '';
   # ranger: config personalizada. El RC por defecto se carga primero (vim keybindings incluidos).
@@ -142,8 +149,26 @@ in
           plugins = [ "git" "docker" "sudo" ];
           theme = "robbyrussell";
         };
-        # zshConf pertenece aquí, no en el bloque direnv
-        interactiveShellInit = zshConf;
+        interactiveShellInit = zshPreamble
+          + lib.optionalString config.shell.direnv ''eval "$(direnv hook zsh)"
+'';
+      };
+      # Se sourcea al final de /etc/zshrc, despues de oh-my-zsh
+      environment.etc."zshrc.local".text = zshBindings;
+      # Crea ~/.zshrc que sourcea el /etc/zshrc global de NixOS
+      system.activationScripts.zshrc-user = ''
+        PERSIST_TARGET="/persist/home/${config.vars.usuarioPrincipal}/.zshrc"
+        if [ -L "/home/${config.vars.usuarioPrincipal}/.zshrc" ] && [ -r "$PERSIST_TARGET" ]; then
+          # impermanence: escribir directamente al target del symlink
+          echo 'source /etc/zshrc' > "$PERSIST_TARGET"
+        elif [ ! -f "/home/${config.vars.usuarioPrincipal}/.zshrc" ]; then
+          echo 'source /etc/zshrc' > "/home/${config.vars.usuarioPrincipal}/.zshrc"
+          chown ${config.vars.usuarioPrincipal}:users "/home/${config.vars.usuarioPrincipal}/.zshrc"
+        fi
+      '';
+      myImpermanence.users.${config.vars.usuarioPrincipal} = {
+        files = [ ".zshrc" ];
+        directories = [ ".zcompcache" ];
       };
     })
 
@@ -151,7 +176,7 @@ in
       userPackages.tmux = [
         (pkgs.symlinkJoin {
           name = "tmux";
-          paths = [ pkgs.tmux pkgs.tmuxPlugins.vim-tmux-navigator pkgs.tmuxPlugins.resurrect ];
+          paths = [ pkgs.tmux pkgs.tmuxPlugins.vim-tmux-navigator pkgs.tmuxPlugins.resurrect pkgs.tmuxPlugins.continuum ];
           buildInputs = [ pkgs.makeWrapper ];
           postBuild = ''
             wrapProgram $out/bin/tmux \
@@ -160,7 +185,7 @@ in
         })
       ];
       myImpermanence.users.${config.vars.usuarioPrincipal} = {
-        directories = [ ".config/tmux" ];
+        directories = [ ".config/tmux" ".local/share/tmux" ];
       };
     })
 
@@ -171,7 +196,7 @@ in
           paths = [ pkgs.ranger ];
           buildInputs = [ pkgs.makeWrapper ];
           # No se deshabilita el RC por defecto — preserva todos los vim keybindings nativos.
-          # La config personalizada se añade encima.
+          # La config personalizada se anade encima.
           postBuild = ''
             wrapProgram $out/bin/ranger \
               --add-flags "--cmd='source ${rangerConf}'"
@@ -182,8 +207,6 @@ in
 
     (lib.mkIf config.shell.direnv {
       userPackages.direnv = [ pkgs.direnv pkgs.nix-direnv ];
-      # Solo el hook de direnv aquí; zshConf ya está en el bloque zsh
-      programs.zsh.interactiveShellInit = ''eval "$(direnv hook zsh)"'';
       myImpermanence.users.${config.vars.usuarioPrincipal} = {
         directories = [ ".config/direnv" ];
       };

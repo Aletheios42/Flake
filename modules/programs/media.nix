@@ -68,7 +68,7 @@
       services.immich = {
         enable = true;
         port = 2283;
-        mediaLocation = "/data/immich";
+        mediaLocation = "/var/lib/immich/media";
         database.enable = true;
       };
 
@@ -80,7 +80,7 @@
         };
       };
 
-      myImpermanence.system.directories = [ "/var/lib/immich" "/data/immich" ];
+      myImpermanence.system.directories = [ "/var/lib/immich" ];
     })
     (lib.mkIf (config.media.obs.enable)  {
       userPackages.obs = [

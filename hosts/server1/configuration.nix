@@ -18,6 +18,7 @@
   mi_sops = {
     enable = true;
     secretsFile = ../../secrets/server1.yaml;
+    useSshKey = true;
   };
 
   arranque = {
@@ -38,8 +39,8 @@
 
   usuarios = {
     aletheios42 = {
-      hashedPasswordFile = config.sops.secrets."users/aletheios42_password".path;
-      llavesSsh = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFwPpoIGjOdnehdg/bI3KVsdirAUygqJOoyiK301W2h0 aletheios42" ];
+      hashedPassword = "$6$p7IwCtyd.a9aWxQ7$7curRU6NV9aUqMq4h7T0814y5jSPDDcrJpvBiLPADtnrc.kHPv8P2FsUQ06oAw1/hriWmQgoKujDQkhBV.3II1";
+      llavesSsh = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIUIAwasvm3HzuviTRGOOwXq9N3+h77+LOf9nA5AFtdP Machine" ];
       grupos = [ "wheel" "networkmanager" "video" "input" "audio" "docker" "uucp" "dialout" "libvirtd" ];
       shell = pkgs.zsh;
     };

@@ -15,8 +15,8 @@
     services.headscale = {
       enable = true;
       package = pkgs.headscale;
-      port = 8080;
-      address = "127.0.0.1"; # mirar esto
+      port = 8085;
+      address = "127.0.0.1";
       settings = {
         server_url = "https://${config.vpn.subdominio}.${config.vars.dominio}";
         ip_prefixes = [ "100.64.0.0/10" ];
@@ -33,7 +33,7 @@
       enableACME = true;
       forceSSL = true;
       locations."/" = {
-        proxyPass = "http://127.0.0.1:8080";
+        proxyPass = "http://127.0.0.1:8085";
       };
     };
 

@@ -51,6 +51,10 @@ let
       curl -L -C - -o "$MODELS_DIR/qwen2.5-coder-7b-instruct-q4_k_m.gguf" \
         "https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct-GGUF/resolve/main/qwen2.5-coder-7b-instruct-q4_k_m.gguf"
 
+      echo "Descargando Qwen2.5-Coder-1.5B-Instruct Q4_K_M..."
+      curl -L -C - -o "$MODELS_DIR/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf" \
+        "https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf"
+
       echo "Descargando whisper-small..."
       curl -L -C - -o "$MODELS_DIR/whisper-small.bin" \
         "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin"
@@ -61,19 +65,39 @@ let
 
   aiTranscribe = pkgs.writeShellApplication {
     # DESC: Graba audio del micrófono, transcribe con whisper y copia al portapapeles
+    # Uso: ai-transcribe          (graba hasta Ctrl+C o max 30s)
+    #      ai-transcribe --stop   (para la grabación en curso desde otro proceso)
     name = "ai-transcribe";
-    runtimeInputs = [ pkgs.whisper-cpp pkgs.sox pkgs.wl-clipboard pkgs.coreutils ];
+    runtimeInputs = [ pkgs.whisper-cpp pkgs.pipewire pkgs.wl-clipboard pkgs.coreutils ];
     text = ''
       MODELS_DIR="${home}/models"
-      TMP_AUDIO="/tmp/ai-transcribe-$$.wav"
+      TMP_AUDIO="/tmp/ai-transcribe.wav"
+      PID_FILE="/tmp/ai-transcribe.pid"
 
-      echo "Grabando... Ctrl+C para parar" >&2
-      sox -d -r 16000 -c 1 "$TMP_AUDIO" trim 0 30 2>/dev/null || true
+      # --stop: para la grabación en curso
+      if [ "''${1:-}" = "--stop" ]; then
+        if [ -f "$PID_FILE" ]; then
+          kill "$(cat "$PID_FILE")" 2>/dev/null || true
+          rm -f "$PID_FILE"
+        fi
+        exit 0
+      fi
 
-      if [ -f "$TMP_AUDIO" ]; then
-        whisper-cpp --model "$MODELS_DIR/whisper-small.bin" \
+      # Cleanup de grabaciones previas
+      rm -f "$TMP_AUDIO" "''${TMP_AUDIO}.txt"
+
+      echo "Grabando... (Ctrl+C o ai-transcribe --stop para parar)" >&2
+      pw-cat --record --rate=16000 --channels=1 "$TMP_AUDIO" &
+      REC_PID=$!
+      echo "$REC_PID" > "$PID_FILE"
+      wait "$REC_PID" 2>/dev/null || true
+      rm -f "$PID_FILE"
+
+      if [ -f "$TMP_AUDIO" ] && [ "$(stat -c%s "$TMP_AUDIO" 2>/dev/null)" -gt 1024 ]; then
+        echo "Transcribiendo..." >&2
+        whisper-cli --model "$MODELS_DIR/whisper-small.bin" \
                     --output-txt --no-timestamps \
-                    "$TMP_AUDIO" >/dev/null 2>&1
+                    "$TMP_AUDIO" 2>&1
         TEXT=$(cat "''${TMP_AUDIO}.txt" 2>/dev/null)
         rm -f "''${TMP_AUDIO}" "''${TMP_AUDIO}.txt"
 
@@ -86,7 +110,8 @@ let
           exit 1
         fi
       else
-        echo "No se grabó audio" >&2
+        echo "No se grabó audio (o el archivo está vacío)" >&2
+        [ -f "$TMP_AUDIO" ] && rm -f "$TMP_AUDIO"
         exit 1
       fi
     '';
@@ -107,15 +132,36 @@ in
     llama = {
       enable = lib.mkEnableOption "Activa llama.cpp para inferencia local";
       serve  = lib.mkEnableOption "Activa llama-server como servicio systemd de usuario";
+      host   = lib.mkOption {
+        type    = lib.types.str;
+        default = "";
+        description = "Host al que se vincula llama-server";
+      };
       port   = lib.mkOption {
         type    = lib.types.port;
-        default = 8080;
+        default = 0;
         description = "Puerto del servidor llama.cpp";
       };
       model  = lib.mkOption {
         type    = lib.types.str;
         default = "qwen2.5-coder-7b-instruct-q4_k_m.gguf";
         description = "Nombre del archivo GGUF en ~/models/";
+      };
+      completionServe = lib.mkEnableOption "Activa servidor de completado de código (modelo pequeño)";
+      completionHost  = lib.mkOption {
+        type    = lib.types.str;
+        default = "";
+        description = "Host para el servidor de completado";
+      };
+      completionPort  = lib.mkOption {
+        type    = lib.types.port;
+        default = 0;
+        description = "Puerto para el servidor de completado de código";
+      };
+      completionModel = lib.mkOption {
+        type    = lib.types.str;
+        default = "qwen2.5-coder-1.5b-instruct-q4_k_m.gguf";
+        description = "Nombre del archivo GGUF para completado en ~/models/";
       };
     };
 
@@ -140,7 +186,7 @@ in
       userPackages.ai = [ pkgs.opencode ];
 
       sops.secrets."opencode/opencode_go_key" = {};
-      # bedrock_token se mantiene en sops como backup pero opencode lo lee de auth.json (via /connect)
+      sops.secrets."opencode/bedrock_token" = {};
 
       myImpermanence.users.${user}.directories = [
         ".config/opencode"
@@ -152,9 +198,12 @@ in
         deps = [ "setupSecrets" "users" "opencode-squeez-setup" ];
         text = ''
           oc_key=$(${pkgs.coreutils}/bin/cat ${config.sops.secrets."opencode/opencode_go_key".path} 2>/dev/null || echo "CHANGE_ME")
+          bedrock_token=$(${pkgs.coreutils}/bin/cat ${config.sops.secrets."opencode/bedrock_token".path} 2>/dev/null || echo "")
 
           mkdir -p ${home}/.config/opencode/agents
+          mkdir -p ${home}/.local/share/opencode
 
+          # opencode.jsonc con todos los providers
           ${pkgs.coreutils}/bin/cat > ${home}/.config/opencode/opencode.jsonc << ENDCONFIG
           {
             "\$schema": "https://opencode.ai/config.json",
@@ -170,17 +219,29 @@ in
                 "options": { "apiKey": "$oc_key" }
               },
               "amazon-bedrock": {
-                "options": { "region": "us-east-1" }
+                "options": { "region": "us-east-1", "apiKey": "$bedrock_token" }
               }${lib.optionalString config.ai.llama.serve ''
               ,
               "llama.cpp": {
                 "npm": "@ai-sdk/openai-compatible",
                 "name": "llama-server (local)",
-                "options": { "baseURL": "http://127.0.0.1:${toString config.ai.llama.port}/v1", "apiKey": "llama-local" },
+                "options": { "baseURL": "http://${config.ai.llama.host}:${toString config.ai.llama.port}/v1", "apiKey": "llama-local" },
                 "models": {
                   "${config.ai.llama.model}": {
                     "name": "Qwen2.5-Coder 7B (local)",
                     "limit": { "context": 4096, "output": 4096 }
+                  }
+                }
+              }''}${lib.optionalString config.ai.llama.completionServe ''
+              ,
+              "llama.cpp-completion": {
+                "npm": "@ai-sdk/openai-compatible",
+                "name": "Qwen 1.5B (completado)",
+                "options": { "baseURL": "http://${config.ai.llama.completionHost}:${toString config.ai.llama.completionPort}/v1", "apiKey": "llama-local" },
+                "models": {
+                  "${config.ai.llama.completionModel}": {
+                    "name": "Qwen2.5-Coder 1.5B (completado)",
+                    "limit": { "context": 2048, "output": 512 }
                   }
                 }
               }''}
@@ -189,122 +250,9 @@ in
               ${mcpEntries}
             }${lib.optionalString config.ai.llama.serve ''
             ,
-            "acp": {
-              "model": {
-                "provider": "llama.cpp",
-                "model": "${config.ai.llama.model}"
-              }
-            }''}
+            "model": "llama.cpp/${config.ai.llama.model}"''}
           }
           ENDCONFIG
-
-          ${pkgs.coreutils}/bin/cat > ${home}/.config/opencode/agents/qa.md << 'AGENT'
-          ---
-          description: Agente QA — analiza el código buscando bugs, edge cases y problemas de testing. Sugiere tests y estrategias de cobertura.
-          mode: subagent
-          temperature: 0.1
-          permission:
-            edit: deny
-            bash:
-              "*": deny
-              "pytest *": allow
-              "cargo test *": allow
-              "go test *": allow
-              "npm test *": allow
-              "bun test *": allow
-          ---
-
-          Eres un experto en QA y testing. Tu objetivo es encontrar fallos antes de que lleguen a producción.
-
-          Analiza el código desde la perspectiva de:
-          - Bugs potenciales y edge cases no cubiertos
-          - Casos de error y manejo de excepciones
-          - Cobertura de tests existentes
-          - Propuestas de tests nuevos (unitarios, integración, e2e)
-          - Condiciones de carrera y problemas de concurrencia
-          AGENT
-
-          ${pkgs.coreutils}/bin/cat > ${home}/.config/opencode/agents/documentacion.md << 'AGENT'
-          ---
-          description: Agente documentación — escribe y mantiene documentación técnica clara y precisa.
-          mode: subagent
-          temperature: 0.3
-          permission:
-            bash: deny
-          ---
-
-          Eres un escritor técnico experto. Creas documentación clara, bien estructurada y mantenible.
-
-          Cuando documentes:
-          - Explica el "por qué", no solo el "qué"
-          - Usa ejemplos concretos y código real
-          - Sigue el estilo del proyecto existente
-          - Crea READMEs, docstrings, comentarios y guías
-          - Mantén la documentación sincronizada con el código
-          AGENT
-
-          ${pkgs.coreutils}/bin/cat > ${home}/.config/opencode/agents/arquitecto.md << 'AGENT'
-          ---
-          description: Agente arquitecto — diseña y analiza la estructura del sistema, patrones y decisiones técnicas.
-          mode: subagent
-          temperature: 0.2
-          permission:
-            edit: deny
-            bash: deny
-          ---
-
-          Eres un arquitecto de software senior. Analizas y diseñas sistemas con visión a largo plazo.
-
-          Tu enfoque:
-          - Evalúa trade-offs entre distintos enfoques
-          - Identifica problemas estructurales y deuda técnica
-          - Propone patrones de diseño apropiados al contexto
-          - Considera escalabilidad, mantenibilidad y rendimiento
-          - Justifica cada decisión técnica con razonamiento claro
-          AGENT
-
-          ${pkgs.coreutils}/bin/cat > ${home}/.config/opencode/agents/navegante.md << 'AGENT'
-          ---
-          description: Agente navegante — investiga documentación, APIs y recursos externos en la web.
-          mode: subagent
-          temperature: 0.3
-          permission:
-            edit: deny
-            bash: deny
-            webfetch: allow
-            websearch: allow
-          ---
-
-          Eres un investigador técnico especializado en encontrar información relevante y actualizada.
-
-          Cuando investigues:
-          - Busca en documentación oficial primero
-          - Verifica fechas y versiones de los recursos
-          - Compara varias fuentes antes de concluir
-          - Resume los hallazgos de forma accionable
-          - Cita las fuentes con URLs concretas
-          AGENT
-
-          ${pkgs.coreutils}/bin/cat > ${home}/.config/opencode/agents/abogado.md << 'AGENT'
-          ---
-          description: Agente abogado del diablo — critica activamente las soluciones propuestas buscando problemas y alternativas.
-          mode: subagent
-          temperature: 0.6
-          permission:
-            edit: deny
-            bash: deny
-          ---
-
-          Tu rol es encontrar todo lo que puede salir mal en una solución propuesta.
-
-          Actúa como un crítico constructivo y riguroso:
-          - Identifica asunciones incorrectas o no verificadas
-          - Señala casos extremos que la solución no maneja
-          - Propone alternativas que podrían ser mejores
-          - Cuestiona la complejidad innecesaria
-          - Busca problemas de seguridad, rendimiento o mantenibilidad
-          - Sé directo y específico, no genérico
-          AGENT
 
           ${pkgs.coreutils}/bin/chown -R ${user}:${user} ${home}/.config/opencode
         '';
@@ -332,31 +280,50 @@ in
     })
 
     (lib.mkIf config.ai.llama.enable {
+      users.users.${user}.linger = true;
       userPackages.ai = [ pkgs.llama-cpp aiDownloadModels ];
 
       myImpermanence.users.${user}.directories = [ "models" ];
 
-      # Servicio systemd de usuario para llama-server
+      # Servicio systemd de usuario para llama-server (modelo principal)
       systemd.user.services.llama-server = lib.mkIf config.ai.llama.serve {
         description = "llama.cpp inference server (OpenAI-compatible)";
         wantedBy    = [ "default.target" ];
         after       = [ "network.target" ];
         serviceConfig = {
           ExecStart = "${pkgs.llama-cpp}/bin/llama-server"
-            + " --model ${home}/models/${config.ai.llama.model}"
+            + " --host ${config.ai.llama.host}"
             + " --port ${toString config.ai.llama.port}"
+            + " --model ${home}/models/${config.ai.llama.model}"
             + " --ctx-size 4096"
-            + " --n-predict -1"
-            + " --log-disable";
+            + " --n-predict -1";
           Restart         = "on-failure";
           RestartSec      = "5s";
           ExecStartPre    = "${pkgs.coreutils}/bin/test -f ${home}/models/${config.ai.llama.model}";
         };
       };
+
+      # Servicio systemd de usuario para completado de código (modelo pequeño)
+      systemd.user.services.llama-server-completion = lib.mkIf config.ai.llama.completionServe {
+        description = "llama.cpp completion server (modelo pequeño)";
+        wantedBy    = [ "default.target" ];
+        after       = [ "network.target" ];
+        serviceConfig = {
+          ExecStart = "${pkgs.llama-cpp}/bin/llama-server"
+            + " --host ${config.ai.llama.completionHost}"
+            + " --port ${toString config.ai.llama.completionPort}"
+            + " --model ${home}/models/${config.ai.llama.completionModel}"
+            + " --ctx-size 2048"
+            + " --n-predict -1";
+          Restart         = "on-failure";
+          RestartSec      = "5s";
+          ExecStartPre    = "${pkgs.coreutils}/bin/test -f ${home}/models/${config.ai.llama.completionModel}";
+        };
+      };
     })
 
     (lib.mkIf config.ai.whisper.enable {
-      userPackages.ai = [ pkgs.whisper-cpp pkgs.sox aiTranscribe ];
+      userPackages.ai = [ pkgs.whisper-cpp pkgs.pipewire aiTranscribe ];
     })
 
   ]);

@@ -18,7 +18,7 @@
   mi_sops = {
     enable = true;
     secretsFile = ../../secrets/machine.yaml;
-    useSshKey = false;
+    useSshKey = true;
   };
 
   sistema.enable = true;
@@ -36,7 +36,7 @@
 
   usuarios = {
     aletheios42 = {
-      hashedPasswordFile = config.sops.secrets."users/aletheios42_password".path;
+      hashedPassword = "$6$p7IwCtyd.a9aWxQ7$7curRU6NV9aUqMq4h7T0814y5jSPDDcrJpvBiLPADtnrc.kHPv8P2FsUQ06oAw1/hriWmQgoKujDQkhBV.3II1";
       llavesSsh = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKBNAFtwsoBJcft2fw5ds2h0QnShb9osnxWVyMsBnClH aletheios42" ];
       grupos = [ "wheel" "networkmanager" "video" "input" "audio" "docker" "uucp" "dialout" "libvirtd" ];
       shell = pkgs.zsh;
@@ -93,6 +93,11 @@
     llama = {
       enable = true;
       serve  = true;
+      port   = 8080;
+      host   = "127.0.0.1";
+      completionServe = true;
+      completionPort  = 8081;
+      completionHost  = "127.0.0.1";
     };
     whisper.enable = true;
   };
@@ -141,4 +146,9 @@
   };
 
   android.enable = true;
+
+  myImpermanence.users.aletheios42.directories = [
+    "Documentos"
+    "Multimedia"
+  ];
 }
