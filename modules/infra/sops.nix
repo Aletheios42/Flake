@@ -22,9 +22,10 @@
       defaultSopsFile = config.mi_sops.secretsFile;
       age = lib.mkMerge [
         (lib.mkIf config.mi_sops.useSshKey {
-          # Usar ruta directa al persist para evitar race conditions con bind mounts
-          # durante nixos-rebuild switch (los units de impermanence se reciclan brevemente)
-          sshKeyPaths = [ "/persist/etc/ssh/ssh_host_ed25519_key" ];
+          sshKeyPaths = [
+            "/persist/etc/ssh/ssh_host_ed25519_key"
+            "/etc/ssh/ssh_host_ed25519_key"
+          ];
         })
         (lib.mkIf (!config.mi_sops.useSshKey) {
           keyFile = "/var/lib/sops-nix/key.txt";

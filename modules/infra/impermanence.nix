@@ -22,6 +22,12 @@ let
     done
 
     btrfs subvolume create /btrfs_tmp/@
+
+    # Asegurar que @persist existe (primer deploy o si alguien lo borro)
+    if ! btrfs subvolume show /btrfs_tmp/@persist 2>/dev/null; then
+      btrfs subvolume create /btrfs_tmp/@persist
+    fi
+
     umount /btrfs_tmp
   '';
 in
@@ -91,6 +97,20 @@ in
         directories = cfg.directories;
         files = cfg.files;
       }) config.myImpermanence.users;
+    };
+    system.activationScripts.impermanenceBootstrap = {
+      deps = [];
+      text = ''
+    # Copiar SSH keys existentes a /persist (primer deploy con impermanence)
+    if [ ! -f /persist/etc/ssh/ssh_host_ed25519_key ] && [ -f /etc/ssh/ssh_host_ed25519_key ]; then
+      mkdir -p /persist/etc/ssh
+      cp /etc/ssh/ssh_host_* /persist/etc/ssh/
+    fi
+    # Copiar machine-id existente a /persist (primer deploy)
+    if [ ! -f /persist/etc/machine-id ] && [ -f /etc/machine-id ]; then
+      cp /etc/machine-id /persist/etc/machine-id
+    fi
+      '';
     };
   };
 }
