@@ -48,6 +48,8 @@
       serviceConfig = {
         User = "openobserve";
         Group = "openobserve";
+        StateDirectory = "openobserve";
+        StateDirectoryMode = "0750";
         ExecStart = pkgs.writeShellScript "openobserve-wrapper" ''
           export ZO_ROOT_USER_PASSWORD=$(${pkgs.coreutils}/bin/cat ${config.sops.secrets."openobserve/root_password".path})
           export ZO_ROOT_USER_SECRET_KEY=$(${pkgs.coreutils}/bin/cat ${config.sops.secrets."openobserve/secret_key".path})

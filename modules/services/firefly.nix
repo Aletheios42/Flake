@@ -51,6 +51,12 @@
       };
     };
 
+    # Asegurar que firefly-iii espera a que SOPS descifre los secrets
+    systemd.services.firefly-iii-setup = {
+      after = [ "sops-nix.service" ];
+      requires = [ "sops-nix.service" ];
+    };
+
     services.nginx.virtualHosts."${config.firefly.subdominio}.${config.vars.dominio}" = {
       locations."/" = {
         extraConfig = lib.optionalString config.oauth2proxy.enable ''
