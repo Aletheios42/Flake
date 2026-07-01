@@ -9,6 +9,7 @@ HOSTNAME=""
 TARGET_IP=""
 SSH_PORT="22"
 SSH_KEY=""
+SSH_USER="root"
 
 usage() {
   cat <<EOF
@@ -22,11 +23,13 @@ Verifica que el host recien instalado funciona correctamente:
 
 Opciones:
   --port <puerto>         Puerto SSH del host instalado (default: 22)
+  --user <usuario>        Usuario SSH (default: root). Si no es root, usa sudo.
   --ssh-key <path>        SSH host key local para comparar age key (opcional)
   --help                  Muestra esta ayuda
 
 Ejemplo:
   bootstrap-verify server2 192.168.1.100 --port 1234
+  bootstrap-verify server2 192.168.1.100 --port 1234 --user aletheios42
   bootstrap-verify server2 192.168.1.100 --port 1234 --ssh-key /tmp/bootstrap-server2/ssh_host_ed25519_key
 EOF
   exit 0
@@ -35,6 +38,7 @@ EOF
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --port) SSH_PORT="$2"; shift 2 ;;
+    --user) SSH_USER="$2"; shift 2 ;;
     --ssh-key) SSH_KEY="$2"; shift 2 ;;
     --help|-h) usage ;;
     -*) echo "ERROR: Opcion desconocida: $1" >&2; exit 1 ;;
@@ -51,10 +55,16 @@ if [[ -z "$TARGET_IP" ]]; then echo "ERROR: Falta target_ip" >&2; exit 1; fi
 
 SSH_OPTS=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR)
 
+# Prefijo sudo si no es root
+SUDO=""
+if [[ "$SSH_USER" != "root" ]]; then
+  SUDO="sudo"
+fi
+
 # Esperar a que el host este accesible
-echo "Esperando a que ${TARGET_IP}:${SSH_PORT} este accesible..."
+echo "Esperando a que ${TARGET_IP}:${SSH_PORT} este accesible (usuario: ${SSH_USER})..."
 RETRIES=0
-while ! ssh "${SSH_OPTS[@]}" -o ConnectTimeout=5 -p "$SSH_PORT" "root@$TARGET_IP" "echo ok" 2>/dev/null; do
+while ! ssh "${SSH_OPTS[@]}" -o ConnectTimeout=5 -p "$SSH_PORT" "${SSH_USER}@$TARGET_IP" "echo ok" 2>/dev/null; do
   RETRIES=$((RETRIES + 1))
   if [[ $RETRIES -ge 60 ]]; then
     echo "ERROR: Timeout (5 min) esperando al host" >&2
@@ -69,7 +79,7 @@ echo ""
 
 # Funcion helper para SSH
 remote() {
-  ssh "${SSH_OPTS[@]}" -p "$SSH_PORT" "root@$TARGET_IP" "$@" 2>/dev/null
+  ssh "${SSH_OPTS[@]}" -p "$SSH_PORT" "${SSH_USER}@$TARGET_IP" "$SUDO $*" 2>/dev/null
 }
 
 echo "=== Verificaciones para $HOSTNAME ==="
@@ -89,7 +99,7 @@ fi
 
 # 2. SSH host key persistida
 echo -n "[2/4] SSH host key en /persist/etc/ssh/: "
-if remote "[[ -f /persist/etc/ssh/ssh_host_ed25519_key ]]"; then
+if remote "test -f /persist/etc/ssh/ssh_host_ed25519_key"; then
   echo "OK"
   PASS=$((PASS + 1))
 else
@@ -151,7 +161,7 @@ if [[ $FAIL -eq 0 ]]; then
   if [[ -n "$SSH_KEY" ]]; then echo "  rm $SSH_KEY ${SSH_KEY}.pub"; fi
   echo ""
   echo "Para aplicar cambios futuros:"
-  echo "  ssh -p $SSH_PORT root@$TARGET_IP nixos-rebuild switch"
+  echo "  ssh -p $SSH_PORT ${SSH_USER}@$TARGET_IP $SUDO nixos-rebuild switch"
 else
   echo "Hay fallos. Revisa los errores arriba e intenta resolverlos manualmente."
   exit 1
