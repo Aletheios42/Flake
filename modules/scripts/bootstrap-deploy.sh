@@ -95,14 +95,22 @@ echo "OK: Acceso SSH confirmado."
 echo ""
 
 # Preparar extra-files con la SSH host key
+# Se copia a ambas rutas:
+#   /etc/ssh/          → para el primer boot (antes de impermanence)
+#   /persist/etc/ssh/  → para que sobreviva al wipe de impermanence
 EXTRA_FILES=$(mktemp -d)
 trap 'rm -rf "$EXTRA_FILES"' EXIT
 
 mkdir -p "$EXTRA_FILES/etc/ssh"
+mkdir -p "$EXTRA_FILES/persist/etc/ssh"
 cp "$SSH_KEY" "$EXTRA_FILES/etc/ssh/ssh_host_ed25519_key"
 cp "${SSH_KEY}.pub" "$EXTRA_FILES/etc/ssh/ssh_host_ed25519_key.pub"
+cp "$SSH_KEY" "$EXTRA_FILES/persist/etc/ssh/ssh_host_ed25519_key"
+cp "${SSH_KEY}.pub" "$EXTRA_FILES/persist/etc/ssh/ssh_host_ed25519_key.pub"
 chmod 600 "$EXTRA_FILES/etc/ssh/ssh_host_ed25519_key"
+chmod 600 "$EXTRA_FILES/persist/etc/ssh/ssh_host_ed25519_key"
 chmod 644 "$EXTRA_FILES/etc/ssh/ssh_host_ed25519_key.pub"
+chmod 644 "$EXTRA_FILES/persist/etc/ssh/ssh_host_ed25519_key.pub"
 
 # Pedir passphrase LUKS interactivamente
 echo "Introduce la passphrase para LUKS (encriptacion de disco):"

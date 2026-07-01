@@ -40,7 +40,10 @@
         }];
       };
       networking.firewall.allowedTCPPorts = config.mi_ssh.servidor.puertos;
-      myImpermanence.system.directories = [ "/etc/ssh" ];
+      myImpermanence.system.files = [
+        "/etc/ssh/ssh_host_ed25519_key"
+        "/etc/ssh/ssh_host_ed25519_key.pub"
+      ];
     })
     {
       myImpermanence.users.${config.vars.usuarioPrincipal} = {
