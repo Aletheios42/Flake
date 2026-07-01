@@ -4,15 +4,21 @@ let
     scrollback_lines -1
     enable_audio_bell no
     confirm_os_window_close 0
-    map shift+enter send_text all \x1b[13;2u
+    map shift+enter send_text all \n
   '';
   tmuxConf = pkgs.writeText "tmux.conf" ''
     set -g clock-mode-style 24
     set -sg escape-time 10
-    set -g @plugin 'tmux-plugins/tmux-resurrect'
-    set -g @plugin 'tmux-plugins/tmux-continuum'
+    set -g base-index 1
+    set -g pane-base-index 1
+
+    # Plugins (cargados via nix, no TPM)
+    set -g @resurrect-dir '~/.local/share/tmux/resurrect'
+    run-shell ${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/resurrect.tmux
     set -g @continuum-restore 'on'
     set -g @continuum-save-interval '15'
+    run-shell ${pkgs.tmuxPlugins.continuum}/share/tmux-plugins/continuum/continuum.tmux
+    run-shell ${pkgs.tmuxPlugins.vim-tmux-navigator}/share/tmux-plugins/vim-tmux-navigator/vim-tmux-navigator.tmux
   '';
   # Antes de oh-my-zsh (plugins, funciones, variables de entorno)
   zshPreamble = ''
@@ -176,7 +182,7 @@ in
       userPackages.tmux = [
         (pkgs.symlinkJoin {
           name = "tmux";
-          paths = [ pkgs.tmux pkgs.tmuxPlugins.vim-tmux-navigator pkgs.tmuxPlugins.resurrect pkgs.tmuxPlugins.continuum ];
+          paths = [ pkgs.tmux ];
           buildInputs = [ pkgs.makeWrapper ];
           postBuild = ''
             wrapProgram $out/bin/tmux \

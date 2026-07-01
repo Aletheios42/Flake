@@ -4,6 +4,7 @@
     enable = lib.mkEnableOption "Activa grayjay musikcube pavucontrol vlc mpv ffmpef";
     obs.enable = lib.mkEnableOption "Activa obs proximamente con sus scripts";
     cliente = lib.mkEnableOption "descarga paquetes para multimedia";
+    grayjay = lib.mkEnableOption "Activa Grayjay (cliente de video)";
     musica = {
       enable = lib.mkEnableOption "Activa jellifin";
       subdominio = lib.mkOption {
@@ -23,13 +24,19 @@
   config = lib.mkIf (config.media.enable) (lib.mkMerge [
     {
       assertions = [{
-        assertion = config.media.cliente || config.media.musica.enable || config.media.galeria.enable ;
-        message = "Activa immich , jellyfin o paquetes de cliente";
+        assertion = config.media.cliente || config.media.grayjay || config.media.musica.enable || config.media.galeria.enable ;
+        message = "Activa immich , jellyfin, grayjay o paquetes de cliente";
       }];
     }
     (lib.mkIf (config.media.cliente) {
       userPackages.media = [
-        pkgs.grayjay pkgs.musikcube pkgs.pavucontrol pkgs.vlc pkgs.mpv pkgs.ffmpeg
+        pkgs.musikcube pkgs.pavucontrol pkgs.vlc pkgs.mpv pkgs.ffmpeg
+      ];
+    })
+    (lib.mkIf (config.media.grayjay) {
+      userPackages.grayjay = [ pkgs.grayjay ];
+      myImpermanence.users.${config.vars.usuarioPrincipal}.directories = [
+        ".local/share/Grayjay"
       ];
     })
     (lib.mkIf (config.media.musica.enable) {

@@ -109,6 +109,7 @@
   media = {
     enable = true;
     cliente = true;
+    grayjay = true;
     obs.enable = true;
   };
 

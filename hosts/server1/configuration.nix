@@ -67,18 +67,6 @@
     port = 5080;
   };
 
-  zitadel = {
-    enable = true;
-    subdominio = "auth";
-  };
-
-  oauth2proxy.enable = true;
-
-  homepage = {
-    enable = true;
-    subdominio = "home";
-  };
-
   firefly = {
     enable = true;
     subdominio = "presupuesto";
@@ -114,8 +102,8 @@
   virtualizacion = {
     enable = true;
     docker = true;
-    podman = true;
-    qemu = true;
+    podman = false;
+    qemu = false;
   };
 
   git = {
@@ -135,7 +123,7 @@
       enable = true;
       subdominio = "fotos";
     };
-    obs.enable = true;
+    obs.enable = false;
   };
 
   passwords = {

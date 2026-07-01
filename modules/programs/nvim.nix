@@ -290,10 +290,19 @@ in
             package = pkgs.vimPlugins.markdown-preview-nvim;
             setup = "";
           };
+          nvim-ts-autotag = {
+            package = pkgs.vimPlugins.nvim-ts-autotag;
+            setup = "require('nvim-ts-autotag').setup()";
+          };
         };
 
         # --- Keymaps ---
         keymaps = [
+          { key = "<A-j>"; mode = "n"; action = ":m .+1<CR>==";      desc = "Move line down"; }
+          { key = "<A-k>"; mode = "n"; action = ":m .-2<CR>==";      desc = "Move line up"; }
+          { key = "<A-j>"; mode = "v"; action = ":m '>+1<CR>gv=gv";  desc = "Move block down"; }
+          { key = "<A-k>"; mode = "v"; action = ":m '<-2<CR>gv=gv";  desc = "Move block up"; }
+
           { key = "<Tab>";   mode = "n"; action = ":tabnext<CR>";     desc = "Next tab"; }
           { key = "<S-Tab>"; mode = "n"; action = ":tabprevious<CR>"; desc = "Prev tab"; }
 
@@ -322,6 +331,7 @@ in
           { key = "K";  mode = "n"; action = "<cmd>lua vim.lsp.buf.hover()<CR>"; desc = "Hover docs"; }
 
           { key = "<leader>ff"; mode = "n"; action = "<cmd>lua require('fzf-lua').files()<CR>";        desc = "Find files"; }
+          { key = "<leader>fF"; mode = "n"; action = "<cmd>lua require('fzf-lua').files({ fd_opts = '--color=never --type f --hidden --follow --no-ignore' })<CR>"; desc = "Find files (incl. gitignore)"; }
           { key = "<leader>fg"; mode = "n"; action = "<cmd>lua require('fzf-lua').live_grep()<CR>";    desc = "Live grep"; }
           { key = "<leader>fw"; mode = "n"; action = "<cmd>lua require('fzf-lua').grep_cword()<CR>";   desc = "Find word"; }
           { key = "<leader>fW"; mode = "n"; action = "<cmd>lua require('fzf-lua').grep_cWORD()<CR>";   desc = "Find WORD"; }
