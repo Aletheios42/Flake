@@ -23,8 +23,6 @@
     - noctalia, sway/niri, nvim, tmux, grub
 * kmscon: (master_DMS  problematico con wayland compositor)
     - Window managers cannot be started from KMS console -> Use the kmscon-launch-gui wrapper to launch your favourite desktop environment. 
-* rbw:
-    - Arreglar la primera autentificacion
 * nvim
     - typist
     - analizar find word leader + f + w
@@ -32,6 +30,7 @@
     - remodelar el conceal
     - revisar si el autocompletado viene del lsp
     - revisar porque no puedo copiar trozos de buffer y solo lineas completas al portapapeles del sistema
+    - hacer los graficos compatibles con foot
 * gestion de tiempo:
     - activitywatch y exporters
 * qutebrowser
@@ -47,6 +46,8 @@
 * scripts
     - linkding-script al clipboard (añadir el secreto)
     - pantallazo con rofi
+    - headers de codigo
+    - doxygens (mirar si es necesario hacerlo custom)
 * boot:
     - estudiar mejor boot
 * linkding
@@ -55,3 +56,10 @@
 * postgres
     - copias de seguridad
     - sincronizar el correo con la base de datos
+* tlp:
+    - ajustar los drivers de la bateria de mi ordenador
+* foot:
+    - dejar el protocolo grafico bien configurado con foot para sustituir a kitty
+* nuclear:
+    - migrar mi musica de spotify
+

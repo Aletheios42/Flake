@@ -12,10 +12,17 @@
   config = lib.mkIf config.rbw.enable {
     userPackages.seguridad = [
       pkgs.rbw
-      config.rbw.pinentry
+      pkgs.pinentry-rofi
       pkgs.rofi-rbw-wayland
     ];
 
+    system.activationScripts.rbwConfig = ''
+  mkdir -p /home/${config.usuarioPrincipal}/.config/rbw
+  cat > /home/${config.usuarioPrincipal}/.config/rbw/config.json <<EOF
+  { "pinentry": "${pkgs.pinentry-rofi}/bin/pinentry-rofi", "lock_timeout": 315360000 }
+  EOF
+  chown ${config.usuarioPrincipal}:users /home/${config.usuarioPrincipal}/.config/rbw/config.json
+    '';
     myImpermanence.users.${config.usuarioPrincipal}.directories = [
       ".config/rbw"
       ".cache/rbw"
