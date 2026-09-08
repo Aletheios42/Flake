@@ -5,6 +5,7 @@
   ../../modules/core/boot.nix
   ../../modules/core/documentacion.nix
   ../../modules/core/users.nix
+  ../../modules/core/nix.nix
   ../../modules/core/virtualizacion.nix
 
   ../../modules/infra/sops.nix

@@ -11,7 +11,6 @@
       };
     };
   };
-
   config = lib.mkIf config.ssh.enable (lib.mkMerge [
     (lib.mkIf config.ssh.cliente.enable {
       programs.ssh = {
@@ -40,15 +39,20 @@
         }];
       };
       networking.firewall.allowedTCPPorts = config.ssh.servidor.puertos;
-      myImpermanence.system.files = [
-        "/etc/ssh/ssh_host_ed25519_key"
-        "/etc/ssh/ssh_host_ed25519_key.pub"
-      ];
+      environment.persistence."/persist" = lib.mkIf (config.impermanencia.enable) {
+        files = [
+          { file = "/etc/ssh/ssh_host_ed25519_key"; }
+          { file = "/etc/ssh/ssh_host_ed25519_key.pub"; }
+        ];
+      };
     })
     {
-      myImpermanence.users.${config.usuarioPrincipal} = {
-        directories = [ ".ssh" ];
-      };
+      environment.persistence."/persist".users.${config.usuarioPrincipal} =
+        lib.mkIf config.impermanencia.enable {
+          directories = [
+            { directory = ".ssh"; mode = "0700"; }
+          ];
+        };
     }
   ]);
 }

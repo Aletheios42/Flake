@@ -21,9 +21,9 @@
 
       # Ranger como explorador de archivos
       c.fileselect.handler = 'external'
-      c.fileselect.single_file.command = ['alacritty', '-e', 'ranger', '--choosefile={}']
-      c.fileselect.multiple_files.command = ['alacritty', '-e', 'ranger', '--choosefiles={}']
-      c.fileselect.folder.command = ['alacritty', '-e', 'ranger', '--choosedir={}']
+      c.fileselect.single_file.command = ['kitty', '-e', 'ranger', '--choosefile={}']
+      c.fileselect.multiple_files.command = ['kitty', '-e', 'ranger', '--choosefiles={}']
+      c.fileselect.folder.command = ['kitty', '-e', 'ranger', '--choosedir={}']
 
       # Atajos para integración con Vaultwarden CLI (rbw)
       config.bind(',p', 'spawn --userscript qute-rbw')
@@ -39,10 +39,13 @@
       };
     };
 
-    myImpermanence.users.${config.usuarioPrincipal}.directories = [
-      ".config/qutebrowser"
-      ".cache/qutebrowser"
-      ".local/share/qutebrowser"
-    ];
+    environment.persistence."/persist".users.${config.usuarioPrincipal} = 
+      lib.mkIf (config.impermanencia.enable) {
+        directories = [
+          {directory = ".config/qutebrowser"; mode = "0755";}
+          {directory = ".cache/qutebrowser"; mode = "0755";}
+          {directory = ".local/share/qutebrowser"; mode = "0755";}
+        ];
+      };
   };
 }

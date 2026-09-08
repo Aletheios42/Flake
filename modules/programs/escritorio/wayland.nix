@@ -1,8 +1,5 @@
 { pkgs, lib, config, ... }:
-let
-  home = config.users.users.${config.usuarioPrincipal}.home;
-in
-  {
+{
   options.escritorio.enable = lib.mkEnableOption "activa el escritorio";
 
   config = lib.mkIf (config.escritorio.enable) {
@@ -25,8 +22,8 @@ in
       pkgs.brightnessctl 
       pkgs.kooha 
       pkgs.rofi-screenshot
-      pkgs.grim   # <--- Recomendado si usas Wayland
-      pkgs.slurp  # <--- Recomendado si usas Wayland
+      pkgs.grim
+      pkgs.slurp
 
       (pkgs.rofi.override {
         plugins = [
@@ -34,6 +31,7 @@ in
         ];
       })
     ];
+    # !!!!!!!!!!!!!! problemas de boot con este script
     # system.activationScripts.userDirs = {
     #   deps = [ "users" ];
     #   text = ''
@@ -56,11 +54,15 @@ in
     #     ${home}/Documentos ${home}/Multimedia ${home}/Público
     #   '';
     # };
-    myImpermanence.users.${config.usuarioPrincipal} = {
-      files = [ ".config/user-dirs.dirs" ];
-      directories = [
-        "Escritorio" "Descargas" "Documentos" "Multimedia" "Público"
-      ];
-    };
+
+    environment.persistence."/persist".users.${config.usuarioPrincipal} =
+      lib.mkIf (config.impermanencia.enable) {
+        directories = [
+          { directory = "Documentos"; mode = "0755"; }
+          { directory = "Descargas"; mode = "0755"; }
+          { directory = "Multimedia"; mode = "0755"; }
+        ];
+        files = [{file = ".config/user-dirs.dirs";}];
+      };
   };
 }

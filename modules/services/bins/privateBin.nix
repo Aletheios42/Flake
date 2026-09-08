@@ -30,6 +30,9 @@
       forceSSL = true;
     };
 
-    myImpermanence.system.directories = [ "/var/lib/privatebin" ];
+    environment.persistence."/persist".directories =
+      lib.mkIf config.impermanencia.enable [
+        { directory = "/var/lib/privatebin"; user = "privatebin"; group = "privatebin"; mode = "0750"; }
+      ];
   };
 }

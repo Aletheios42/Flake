@@ -27,6 +27,12 @@ in
 
   config = lib.mkIf config.shell.tmux {
     userPackages.tmux = [ tmuxPkg ];
-    myImpermanence.users.${config.usuarioPrincipal}.directories = [ ".config/tmux" ".local/share/tmux" ];
+    environment.persistence."/persist".users.${config.usuarioPrincipal} =
+      lib.mkIf (config.impermanencia.enable) {
+        directories = [
+          { directory = ".config/tmux"; mode = "0755";}
+          { directory = ".local/share/tmux"; mode = "0755";}
+        ];
+      };
   };
 }

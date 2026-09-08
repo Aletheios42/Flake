@@ -36,10 +36,16 @@
       gnupg.sshKeyPaths = [];
     };
 
-    myImpermanence.system.directories =
-      lib.optional (!config.sops.useSshKey) "/var/lib/sops-nix";
-
-    # Persistir la clave age del administrador para poder editar/re-encriptar secrets
-    myImpermanence.users.${config.usuarioPrincipal}.directories = [ ".config/sops" ];
+    environment.persistence."/persist" = lib.mkIf config.impermanencia.enable {
+      directories = lib.optional (!config.sops.useSshKey) {
+        directory = "/var/lib/sops-nix";
+        user = "root";
+        group = "root";
+        mode = "0700";
+      };
+      users.${config.usuarioPrincipal}.directories = [
+        { directory = ".config/sops"; mode = "0700"; }
+      ];
+    };
   };
 }

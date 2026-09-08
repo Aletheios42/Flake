@@ -12,10 +12,7 @@ imports = (import ./registry.nix) ++ [
   # hacer serccion de paquetes de dev
   userPackages.dev = [ pkgs.gnumake pkgs.gdb pkgs.gcc pkgs.magic-wormhole-rs ];
 
-  sistema =  {
-    enable = true;
-    version = "26.05";
-  };
+  sistema.enable = true;
 
   impermanencia = {
     enable = true;

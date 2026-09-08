@@ -1,8 +1,5 @@
 { pkgs, lib, config, ... }:
-let
-  user  = config.usuarioPrincipal;
-in
-  {
+{
   options.editor.enable = lib.mkEnableOption "Activa nvim";
 
   config = lib.mkIf config.editor.enable {
@@ -36,7 +33,7 @@ in
 
           session.nvim-session-manager = {
             enable = true;
-            usePicker = false; # no dressing.nvim, usas fzf-lua
+            usePicker = false; # no dressing.nvim, uso fzf-lua
             mappings = {
               loadSession = "<leader>sl";
               loadLastSession = "<leader>slt";
@@ -96,17 +93,17 @@ in
               close          = "<C-e>";
               scrollDocsUp   = "<C-u>";
               scrollDocsDown = "<C-d>";
-            };
-            friendly-snippets.enable = true;
-          };
+              };
+              friendly-snippets.enable = true;
+              };
 
-          git = {
-            enable = true;
-            gitsigns = {
+              git = {
+              enable = true;
+              gitsigns = {
               enable = true;
               mappings = {
-                nextHunk = "]g";
-                previousHunk = "[g";
+              nextHunk = "]g";
+              previousHunk = "[g";
               };
             };
           };
@@ -262,7 +259,7 @@ in
             };
             zk-nvim = {
               package = pkgs.vimPlugins.zk-nvim;
-            setup = ''
+              setup = ''
             require("zk").setup({ picker = "fzf_lua" })
               '';
             }; 
@@ -283,7 +280,7 @@ in
             { key = "<F2>";  mode = "n"; action = ":set listchars=space:·,tab:→\\ ,eol:↲,trail:•<CR>:set list!<CR>"; desc = "Toggle listchars"; }
             { key = "<F3>";  mode = "n"; action = ":set cursorline!<CR>"; desc = "Toggle cursorline"; }
             { key = "<F4>";  mode = "n"; action = "<cmd>lua local ft = vim.bo.ft; if ft=='markdown' then vim.cmd('MarkdownPreviewToggle') elseif ft=='pdf' then vim.fn.jobstart({'zathura', vim.fn.expand('%')}) end<CR>"; desc = "Preview markup"; }
-           ## buscar mejores shotcuts en nvim f5/6/7 8?
+            ## buscar mejores shotcuts en nvim f5/6/7 8?
             { key = "<F5>";  mode = "n"; action = "za";  desc = "Toggle fold (current)"; }
             { key = "<F6>";  mode = "n"; action = "zA";  desc = "Toggle fold (recursive)"; }
             { key = "<F7>";  mode = "n"; action = "zi";  desc = "Toggle foldenable (all)"; }
@@ -374,11 +371,14 @@ in
         };
       };
     };
-    myImpermanence.users.${user}.directories = [
-      ".config/nvim"
-      ".local/state/nvf"
-      ".local/share/nvf"
-      ".cache/nvim"
-    ];
+    environment.persistence."/persist".users.${config.usuarioPrincipal} =
+      lib.mkIf (config.impermanencia.enable) {
+        directories = [
+          {directory = ".config/nvim"; mode = "0755";}
+          {directory = ".local/state/nvf"; mode = "0755";}
+          {directory = ".local/share/nvf"; mode = "0755";}
+          {directory = ".cache/nvim"; mode = "0755";}
+        ];
+      };
   };
 }

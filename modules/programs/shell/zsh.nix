@@ -1,6 +1,5 @@
 { pkgs, lib, config, ... }:
 let
-  home = config.users.users.${config.usuarioPincipal}.home;
   zshPreamble = ''
     zstyle ':completion:*' menu no
     zstyle ':completion:*' use-cache on
@@ -52,8 +51,8 @@ in
       histFile = "$HOME/.zsh_history";
       ohMyZsh = { enable = true; plugins = [ "git" "docker" "sudo" ]; theme = "robbyrussell"; };
       interactiveShellInit = zshPreamble
-        + lib.optionalString config.shell.direnv ''eval "$(direnv hook zsh)"
-'';
+        + lib.optionalString (config.shell.direnv) ''eval "$(direnv hook zsh)"
+        '';
     };
     environment.etc."zshrc.local".text = zshBindings;
     system.activationScripts.zshrc-user = ''
@@ -65,8 +64,12 @@ in
         chown ${config.usuarioPrincipal}:users "/home/${config.usuarioPrincipal}/.zshrc"
       fi
     '';
-    myImpermanence.users.${config.usuarioPrincipal} = {
-      files = [ ".zshrc" ".zsh_history" ]; 
-      directories = [ ".zcompcache" ]; };
+    environment.persistence."/persist".users.${config.usuarioPrincipal} = {
+      directories = [ { directory = ".zcompcache"; mode = "0755"; } ];
+      files = [
+        { file = ".zshrc"; }
+        { file = ".zsh_history"; }
+      ];
+    };
   };
 }

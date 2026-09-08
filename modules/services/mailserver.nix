@@ -110,11 +110,14 @@
       "d /var/lib/postfix 0700 postfix postfix -"
       "d /var/lib/dovecot 0755 dovecot2 dovecot2 -"
     ];
-    myImpermanence.system.directories = [
-      "/var/vmail"
-      "/var/lib/rspamd"
-      "/var/lib/postfix"
-      "/var/lib/dovecot"
-    ];
+
+    environment.persistence."/persist/" = lib.mkIf (config.impermanencia.enable) {
+      directories = [
+        {directory = "/var/vmail"; mode = "0750";}
+        {directory = "/var/lib/rspamd"; mode = "0750";}
+        {directory = "/var/lib/postfix"; mode = "0750";}
+        {directory = "/var/lib/dovecot"; mode = "0750";}
+      ];
+    };
   };
 }

@@ -23,6 +23,9 @@
         proxyWebsockets = true;
       };
     };
-    myImpermanence.system.directories = [ "/var/lib/immich" ];
+
+    environment.persistence."/persist" = lib.mkIf (config.impermanencia.enable) {
+      directories = [{ directory = "/var/lib/immich" ; mode = "0750"; }];
+    };
   };
 }

@@ -54,9 +54,12 @@ in
       };
     };
 
-    myImpermanence.users.${user}.directories = [
-      ".config/chromium"
-      ".cache/chromium"
-    ];
+    environment.persistence."/persist".users.${config.usuarioPrincipal} =
+      lib.mkIf (config.impermanencia.enable) {
+        directories = [
+          { directory = ".config/chromium"; mode = "0755";}
+          { directory = ".cache/chromium"; mode = "0755";}
+        ];
+      };
   };
 }

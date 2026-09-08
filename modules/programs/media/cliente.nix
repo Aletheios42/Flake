@@ -4,7 +4,6 @@
 
   config = lib.mkIf config.media.cliente {
     userPackages.media = [
-      pkgs.nuclear
       pkgs.pavucontrol
       pkgs.vlc
       pkgs.mpv
@@ -12,6 +11,7 @@
       pkgs.ardour
       pkgs.blender
       pkgs.grayjay
+      pkgs.nuclear
     ];
 
     userPackages.obs = [
@@ -24,12 +24,15 @@
       })
     ];
 
-    myImpermanence.users.${config.usuarioPrincipal}.directories = [
-      ".local/share/Grayjay"
-      ".config/blender"
-      ".config/obs-studio"
-      ".config/vlc"
-      ".local/state/mpv"
-    ];
+    environment.persistence."/persist".users.${config.usuarioPrincipal} =
+      lib.mkIf (config.impermanencia.enable) {
+        directories = [
+          { directory = ".local/share/Grayjay"; mode = "0755";}
+          { directory = ".config/blender"; mode = "0755";}
+          { directory = ".config/obs-studio"; mode = "0755";}
+          { directory = ".config/vlc"; mode = "0755";}
+          { directory = ".local/state/mpv"; mode = "0755";}
+        ];
+      };
   };
 }

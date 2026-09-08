@@ -10,8 +10,9 @@
       pkgs.tor-browser
     ];
 
-    myImpermanence.users.${config.usuarioPrincipal}.directories = [
-      ".local/share/tor-browser"
-    ];
+    environment.persistence."/persist".users.${config.usuarioPrincipal} = 
+      lib.mkIf (config.impermanencia.enable) {
+        directories = [{ directory = ".local/share/tor-browser"; mode = "0755";}];
+      };
   };
 }

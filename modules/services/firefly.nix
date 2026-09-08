@@ -79,6 +79,8 @@
       };
     };
 
-    myImpermanence.system.directories = [ "/var/lib/firefly-iii" ];
+    environment.persistence."/persist" = lib.mkIf (config.impermanencia.enable) {
+      directories = [{ directory = "/var/lib/firefly-iii" ; mode = "0750"; }];
+    };
   };
 }

@@ -20,16 +20,17 @@
       pkgs.element-desktop
     ];
 
-    myImpermanence.users.${config.usuarioPrincipal} = {
+    environment.persistence."/persist".users.${config.usuarioPrincipal} =
+      lib.mkIf (config.impermanencia.enable) {
       directories = [
-        ".config/discord"
-        ".config/WhatSie"
-        ".local/share/org.keshavnrj.ubuntu"
-        ".config/Slack"
-        ".config/telegram-desktop"
-        ".local/share/TelegramDesktop"
-        ".weechat"
-        ".config/Element"
+        { directory = ".config/discord"; mode = "0700"; }
+        { directory = ".config/WhatSie"; mode = "0700"; }
+        { directory = ".local/share/org.keshavnrj.ubuntu"; mode = "0700"; }
+        { directory = ".config/Slack"; mode = "0700"; }
+        { directory = ".config/telegram-desktop"; mode = "0700"; }
+        { directory = ".local/share/TelegramDesktop"; mode = "0700"; }
+        { directory = ".weechat"; mode = "0700"; }
+        { directory = ".config/Element"; mode = "0700"; }
       ];
     };
   };

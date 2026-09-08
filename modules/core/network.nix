@@ -18,7 +18,7 @@
       description = "Enciende o apaga el firewall";
     };
     puertosPermitidos = lib.mkOption {
-      type = lib.types.listOf lib.types.int;
+      type = lib.types.listOf lib.types.port;
       default = [80 443 1234];
       description = "Puertos abiertos en el firewall";
     }; 
@@ -44,10 +44,6 @@
         assertion = config.red.timeZone != "";
         message = "timezone no puede ser una cadena vacia";
       }
-      {
-        assertion = lib.all (p: p >= 0 && p <= 65535) config.red.puertosPermitidos;
-        message = "Los puertos validos estan en el rango 0-65535";
-      }
     ];
 
     networking = {
@@ -67,9 +63,21 @@
     };
     time.timeZone = config.red.timeZone;
 
-    myImpermanence.system.directories = [
-      "/etc/NetworkManager/system-connections"
-      "/var/lib/NetworkManager"
-    ];
+    environment.persistence."/persist" = lib.mkIf config.impermanencia.enable {
+      directories = [
+        {
+          directory = "/etc/NetworkManager/system-connections";
+          user = "root";
+          group = "root";
+          mode = "0700";
+        }
+        {
+          directory = "/var/lib/NetworkManager";
+          user = "root";
+          group = "root";
+          mode = "0700";
+        }
+      ];
+    };
   };
 }

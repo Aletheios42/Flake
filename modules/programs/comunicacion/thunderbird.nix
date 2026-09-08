@@ -29,6 +29,9 @@ in
         fi
       '';
     };
-    myImpermanence.users.${user}.directories = [ ".thunderbird" ];
+    environment.persistence."/persist".users.${config.usuarioPrincipal} =
+      lib.mkIf (config.impermanencia.enable) {
+        directories = [{ directory = ".thunderbird"; mode = "0700";}];
+      };
   };
 }

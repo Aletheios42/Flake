@@ -22,6 +22,9 @@ KITTYEOF
         chown ${config.usuarioPrincipal}:users "$KITTY_CFG/kitty.conf"
       '';
     };
-    myImpermanence.users.${config.usuarioPrincipal}.directories = [ ".config/kitty" ];
+    environment.persistence."/persist".users.${config.usuarioPrincipal} = 
+      lib.mkIf (config.impermanencia.enable) {
+        directories = [{ directory = ".config/kitty"; mode = "0755";}];
+      };
   };
 }

@@ -7,6 +7,7 @@
   ../../modules/core/documentacion.nix
   ../../modules/core/bluetooth.nix
   ../../modules/core/audio.nix
+  ../../modules/core/nix.nix
   ../../modules/core/virtualizacion.nix
 
   ../../modules/infra/sops.nix

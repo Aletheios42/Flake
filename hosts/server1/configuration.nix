@@ -5,10 +5,7 @@
     ./disk.nix
   ];
 
-  sistema =  {
-    enable = true;
-    version = "26.05";
-  };
+  sistema.enable = true;
 
   impermanencia = {
     enable = true;

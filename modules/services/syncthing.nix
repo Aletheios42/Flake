@@ -44,11 +44,12 @@
       };
     };
 
-    myImpermanence.users.${config.syncthing.usuario} = {
-      directories = [
-        "sync"
-        ".config/syncthing"
-      ];
-    };
+    environment.persistence."/persist".users.${config.usuarioPrincipal} =
+      lib.mkIf (config.impermanencia.enable) {
+        directories = [
+          { directory = "sync"; mode = "0755"; }
+          { directory = ".config/syncthing"; mode = "0755"; }
+        ];
+      };
   };
 }

@@ -37,6 +37,9 @@
         '';
       };
     };
-    myImpermanence.system.directories = [ "/var/lib/jellyfin" ];
+
+    environment.persistence."/persist" = lib.mkIf (config.impermanencia.enable) {
+      directories = [{ directory = "/var/lib/jellyfin" ; mode = "0750"; }];
+    };
   };
 }

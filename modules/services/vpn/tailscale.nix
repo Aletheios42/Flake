@@ -18,6 +18,8 @@
 
     systemd.services.tailscaled.after = [ "sops-nix.service" ];
 
-    myImpermanence.system.directories = [ "/var/lib/tailscale" ];
+    environment.persistence."/persist" = lib.mkIf (config.impermanencia.enable) {
+      directories = [{ directory = "/var/lib/tailscale" ; mode = "0750"; }];
+    };
   };
 }

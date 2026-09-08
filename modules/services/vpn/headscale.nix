@@ -37,6 +37,8 @@
       };
     };
 
-    myImpermanence.system.directories = [ "/var/lib/headscale" ];
+    environment.persistence."/persist" = lib.mkIf (config.impermanencia.enable) {
+      directories = [{ directory = "/var/lib/headscale" ; mode = "0750"; }];
+    };
   };
 }

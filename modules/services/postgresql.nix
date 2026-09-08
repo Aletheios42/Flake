@@ -64,9 +64,9 @@
     };
     environment.etc."pgbouncer/userlist.txt".text =
       lib.concatMapStringsSep "\n" (db: ''"${db}" ""'') config.postgres.databases;
-    myImpermanence.system.directories = [
-      "/var/lib/postgresql"
-      "/var/backup/postgresql"
-    ];
+
+    environment.persistence."/persist" = lib.mkIf (config.impermanencia.enable) {
+      directories = [{ directory = "/var/backup/postgres"; user = "postgres"; group = "postgres"; mode = "0750";}];
+    };
   };
 }

@@ -1,4 +1,4 @@
-{ lib, config, ...}:
+{ pkgs, lib, config, ...}:
 {
   options.virtualizacion = {
     enable = lib.mkEnableOption "activa el modulo de virtualizacion y contenedores";
@@ -16,9 +16,18 @@
     (lib.mkIf (config.virtualizacion.podman) {
       virtualisation.podman.enable = true;
     })
-    (lib.mkIf (config.virtualizacion.qemu) {
+    (lib.mkIf config.virtualizacion.qemu {
+      userPackages.virtualizacion = [ pkgs.qemu ];
       virtualisation.libvirtd.enable = true;
-      myImpermanence.system.directories = [ "/var/lib/libvirt" "/var/lib/systemd"  ];
+      environment.persistence."/persist" = lib.mkIf config.impermanencia.enable {
+        directories = [
+          { directory = "/var/lib/libvirt/dnsmasq";  user = "root"; group = "root"; mode = "0755"; }
+          { directory = "/var/lib/libvirt/hooks";    user = "root"; group = "root"; mode = "0755"; }
+          { directory = "/var/lib/libvirt/nwfilter"; user = "root"; group = "root"; mode = "0755"; }
+          { directory = "/var/lib/libvirt/qemu";     user = "root"; group = "root"; mode = "0755"; }
+        ];
+        files = [ "/var/lib/libvirt/network.conf" "/var/lib/libvirt/qemu.conf" ];
+      };
     })
   ]);
 }

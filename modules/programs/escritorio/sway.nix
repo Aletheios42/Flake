@@ -125,6 +125,12 @@ in
   config = lib.mkIf config.escritorio.sway {
     programs.sway.enable = true;
     environment.etc."sway/config".text = swayConfig;
-    myImpermanence.users.${config.usuarioPrincipal}.directories = [ ".config/sway" ".cache/sway" ];
+    environment.persistence."/persist".users.${config.usuarioPrincipal} =
+      lib.mkIf (config.impermanencia.enable) {
+        directories = [
+          { directory = ".config/sway"; mode = "0755"; }
+          { directory = ".cache/sway"; mode = "0755"; }
+        ];
+      };
   };
 }

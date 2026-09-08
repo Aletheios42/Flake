@@ -69,6 +69,8 @@ in
         proxyWebsockets = true;
       };
     };
-    myImpermanence.system.directories = [ "${cfg.WorkingDirectory}" ];
+    environment.persistence."/persist" = lib.mkIf (config.impermanencia.enable) {
+      directories = [{ directory = "${cfg.WorkingDirectory}" ; mode = "0750"; }];
+    };
   };
 }

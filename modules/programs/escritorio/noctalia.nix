@@ -165,6 +165,13 @@ in
         chown -R ${config.usuarioPrincipal}:users ${home}/.local/state/noctalia
       '';
     };
-    myImpermanence.users.${config.usuarioPrincipal}.directories = [ ".cache/noctalia" ".local/share/noctalia" ".local/state/noctalia" ];
+    environment.persistence."/persist".users.${config.usuarioPrincipal} =
+      lib.mkIf (config.impermanencia.enable) {
+        directories = [
+          { directory = ".local/share/noctalia"; mode = "0755"; }
+          { directory = ".local/state/noctalia"; mode = "0755"; }
+          { directory = ".cache/noctalia"; mode = "0755"; }
+        ];
+      };
   };
 }

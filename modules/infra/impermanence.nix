@@ -40,31 +40,6 @@ in
     };
   };
 
-  options.myImpermanence = {
-    system = {
-      directories = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [];
-        description = "Directorios del sistema a persistir";
-      };
-      files = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [];
-        description = "Archivos del sistema a persistir";
-      };
-    };
-    users = lib.mkOption {
-      type = lib.types.attrsOf (lib.types.submodule {
-        options = {
-          directories = lib.mkOption { type = lib.types.listOf lib.types.str; default = []; };
-          files = lib.mkOption { type = lib.types.listOf lib.types.str; default = []; };
-        };
-      });
-      default = {};
-      description = "Archivos/directorios por usuario a persistir";
-    };
-  };
-
   config = lib.mkIf config.impermanencia.enable {
     boot.initrd.postDeviceCommands = lib.mkIf (!config.boot.initrd.systemd.enable) (lib.mkAfter wipeScript);
 
@@ -83,19 +58,14 @@ in
     environment.persistence."/persist" = {
       hideMounts = true;
       directories = [
-        "/var/lib/nixos"
-        "/var/log"
-      ] ++ config.myImpermanence.system.directories;
-
+        { directory = "/var/lib/nixos"; user = "root"; group = "root"; mode = "0755"; }
+        { directory = "/var/log"; user = "root"; group = "root"; mode = "0755"; }
+      ];
       files = [
-        "/etc/machine-id"
-      ] ++ config.myImpermanence.system.files;
-
-      users = lib.mapAttrs (name: cfg: {
-        directories = cfg.directories;
-        files = cfg.files;
-      }) config.myImpermanence.users;
+        { file = "/etc/machine-id"; }
+      ];
     };
+
     system.activationScripts.impermanenceBootstrap = {
       deps = [];
       text = ''

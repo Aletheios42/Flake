@@ -21,9 +21,10 @@
       ];
     }
     {
-      myImpermanence.users.${config.usuarioPrincipal} = {
-        directories = [ "Documentos/Pkm" ];
-      };
+      environment.persistence."/persist".users.${config.usuarioPrincipal} =
+        lib.mkIf (config.pkm.enable) {
+          directories = [{directory = "Documentos/Pkm"; mode = "0755";}];
+        };
     }
     (lib.mkIf config.pkm.zk {
       userPackages.pkm = [ pkgs.pandoc pkgs.typst pkgs.zk ];
@@ -55,9 +56,10 @@
     })
     (lib.mkIf config.pkm.obsidian {
       userPackages.pkm = [ pkgs.obsidian ];
-      myImpermanence.users.${config.usuarioPrincipal} = {
-        directories = [ ".config/obsidian" ];
-      };
+      environment.persistence."/persist".users.${config.usuarioPrincipal} =
+        lib.mkIf (config.pkm.obsidian.enable) {
+          directories = [{directory = ".config/obsidian"; mode = "0755";}];
+        };
     })
   ]);
 }

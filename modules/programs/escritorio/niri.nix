@@ -101,6 +101,12 @@ in
     programs.niri.enable = true;
     programs.niri.package = pkgs.niri;
     environment.etc."niri/config.kdl".text = configKdl;
-    myImpermanence.users.${config.usuarioPrincipal}.directories = [ ".config/niri" ".cache/niri" ];
+    environment.persistence."/persist".users.${config.usuarioPrincipal} =
+      lib.mkIf (config.impermanencia.enable) {
+        directories = [
+          { directory = ".config/niri"; mode = "0755"; }
+          { directory = ".cache/niri"; mode = "0755"; }
+        ];
+      };
   };
 }

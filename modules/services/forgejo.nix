@@ -34,6 +34,8 @@
       };
     };
 
-    myImpermanence.system.directories = [ "/var/lib/forgejo" ];
+    environment.persistence."/persist" = lib.mkIf (config.impermanencia.enable) {
+      directories = [{ directory = "/var/lib/forgejo" ; mode = "0750"; }];
+    };
   };
 }

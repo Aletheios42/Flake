@@ -23,7 +23,10 @@ in
     (lib.mkIf (config.ai.llama.fim.enable || config.ai.llama.work.enable) {
       users.users.${user}.linger = true;
       userPackages.ai = [ pkgs.llama-cpp ];
-      myImpermanence.users.${user}.directories = [ "models" ];
+      environment.persistence."/persist".users.${config.usuarioPrincipal} =
+        lib.mkIf (config.impermanencia.enable) {
+          directories = [{ directory = "/models" ; mode = "0750"; }];
+        };
     })
 
     (lib.mkIf config.ai.llama.fim.enable {

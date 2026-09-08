@@ -72,6 +72,8 @@
       };
     };
 
-    myImpermanence.system.directories = [ "/var/lib/zitadel" ];
+    environment.persistence."/persist" = lib.mkIf (config.impermanencia.enable) {
+      directories = [{ directory = "/var/lib/zitadel" ; mode = "0750"; }];
+    };
   };
 }

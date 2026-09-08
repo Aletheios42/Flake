@@ -64,6 +64,8 @@
       };
     };
 
-    myImpermanence.system.directories = [ "/var/lib/homepage-dashboard" ];
+    environment.persistence."/persist" = lib.mkIf (config.impermanencia.enable) {
+      directories = [{ directory = "/var/lib/homepage-dashboard" ; mode = "0750"; }];
+    };
   };
 }

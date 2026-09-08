@@ -80,12 +80,17 @@ let
     ${keybindings}
   '';
 in
-{
+  {
   options.escritorio.mango = lib.mkEnableOption "Activa mango";
-
   config = lib.mkIf config.escritorio.mango {
     programs.mango.enable = true;
     environment.etc."mango/config.conf".text = configConf;
-    myImpermanence.users.${config.usuarioPrincipal}.directories = [ ".config/mango" ".cache/mango" ];
+    environment.persistence."/persist".users.${config.usuarioPrincipal} =
+      lib.mkIf (config.impermanencia.enable) {
+        directories = [
+          { directory = ".config/mango"; mode = "0755"; }
+          { directory = ".cache/mango"; mode = "0755"; }
+        ];
+      };
   };
 }

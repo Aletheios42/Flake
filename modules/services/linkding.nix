@@ -33,7 +33,7 @@
         LD_DISABLE_URL_VALIDATION = "True";
         LD_ENABLE_OIDC = "True";
       };
-      enviromentFile = config.sops.secrets."linkding/admin_credential".path;
+      environmentFile = config.sops.secrets."linkding/admin_credential".path;
     };
 
     services.nginx.virtualHosts."${config.linkding.subdominio}.${config.red.dominio}" = {
@@ -44,6 +44,9 @@
         proxyWebsockets = true;
       };
     };
-    myImpermanence.system.directories = [ config.services.linkding.dataDir ];
+
+    environment.persistence."/persist" = lib.mkIf (config.impermanencia.enable) {
+      directories = [{ directory = config.services.linkding.dataDir; mode = "0750"; }];
+    };
   };
 }

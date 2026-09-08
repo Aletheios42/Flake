@@ -45,6 +45,11 @@
         proxyWebsockets = true;
       };
     };
-    myImpermanence.system.directories = [ "/var/lib/miniflux" ];
+
+    environment.persistence."/persist" = lib.mkIf config.impermanencia.enable {
+      directories = [
+        { directory = "/var/lib/miniflux"; user = "miniflux"; group = "miniflux"; mode = "0700"; }
+      ];
+    };
   };
 }

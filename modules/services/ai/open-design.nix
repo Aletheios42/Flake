@@ -25,6 +25,9 @@
 
     sops.secrets."opendesign/env" = {};
 
-    myImpermanence.users.${config.usuarioPrincipal}.directories = [ ".open-design" ];
+    environment.persistence."/persist".users.${config.usuarioPrincipal} =
+      lib.mkIf (config.impermanencia.enable) {
+        directories = [{ directory = ".open-design" ; mode = "0750"; }];
+      };
   };
 }

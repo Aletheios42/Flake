@@ -45,6 +45,8 @@
       forceSSL = true;
     };
 
-    myImpermanence.system.directories = [ "/var/lib/nextcloud" ];
+    environment.persistence."/persist".directories = [
+      { directory = "/var/lib/nextcloud"; user = "nextcloud"; group = "nextcloud"; mode = "0750"; }
+    ];
   };
 }

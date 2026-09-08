@@ -50,8 +50,14 @@
       };
     };
 
-    myImpermanence.system.directories = [
-      "/var/lib/vaultwarden"
-    ];
+    environment.persistence."/persist" = 
+      lib.mkIf (config.impermanencia.enable) {
+        directories = [
+          {
+            directory = "/var/lib/vaultwarden";
+            user = "vaultwarden"; group = "vaultwarden"; mode = "0700";
+          }
+        ];
+      };
   };
 }

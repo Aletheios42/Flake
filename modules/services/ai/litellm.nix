@@ -17,10 +17,16 @@ in
   options.ai.litellm.puerto = lib.mkOption { type = lib.types.port; };
 
   config = lib.mkIf config.ai.litellm.enable {
-    assertions = [{
-      assertion = config.sops.enable;
-      message = "ai.litellm requiere sops para DEEPSEEK_API_KEY y master key";
-    }];
+    assertions = [
+      {
+        assertion = config.sops.enable;
+        message = "litellm: requiere sops para DEEPSEEK_API_KEY y master key";
+      }
+      {
+        assertion = config.virtualizacion.podman;
+        message = "litellm: requiere podman";
+      }
+    ];
 
     sops.secrets."ai/deepseek_api_key" = {};
     sops.secrets."ai/litellm_master_key" = {};
@@ -33,22 +39,23 @@ in
     };
 
     systemd.services.litellm = {
-      description = "LiteLLM AI Gateway proxy";
+      description = "LiteLLM AI Gateway proxy container";
       wantedBy    = [ "multi-user.target" ];
       after       = [ "network.target" ];
       serviceConfig = {
-        ExecStart = "${pkgs.python3.withPackages (ps: [
-          ps.litellm
-          # Si necesita expression u otros, los puedes listar aquí si existen, 
-          # o dejar que python3.withPackages gestione los paquetes compatibles.
-        ])}/bin/litellm"
-          + " --config ${litellmConfigYaml}"
-          + " --host 127.0.0.1"
-          + " --port ${toString config.ai.litellm.puerto}";
-        EnvironmentFile = config.sops.templates."litellm.env".path;
-        Restart               = "on-failure";
-        RestartSec            = "5s";
+        Restart    = "always";
+        RestartSec = "5s";
       };
+      script = ''
+        exec ${pkgs.podman}/bin/podman run --rm \
+        --name litellm-proxy \
+        --network host \
+        -v ${litellmConfigYaml}:/app/config.yaml:ro \
+        --env-file ${config.sops.templates."litellm.env".path} \
+        ghcr.io/berriai/litellm:v1.99.1 \
+        --config /app/config.yaml \
+        --port ${toString config.ai.litellm.puerto}
+        '';
     };
   };
 }

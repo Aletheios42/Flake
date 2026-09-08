@@ -12,7 +12,7 @@
     assertions = [
       {
         assertion = config.nginx.email != "";
-        message   = "nginx.email no puede estar vacío (se usa para ACME/Let's Encrypt)";
+        message   = "nginx: email no puede estar vacío (se usa para ACME/Let's Encrypt)";
       }
     ];
 
@@ -46,6 +46,8 @@
       };
     };
 
-    myImpermanence.system.directories = [ "/var/lib/acme" ];
+    environment.persistence."/persist" = lib.mkIf (config.impermanencia.enable) {
+      directories = [{ directory = "/var/lib/acme"; user = "acme"; group = "acme"; mode = "0750"; }];
+    };
   };
 }

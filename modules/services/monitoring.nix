@@ -7,11 +7,7 @@
       default = "";
       description = "Subdominio para OpenObserve";
     };
-    port = lib.mkOption {
-      type = lib.types.port;
-      default = 5080;
-      description = "Puerto interno de OpenObserve";
-    };
+    port = lib.mkOption { type = lib.types.port; };
   };
 
   config = lib.mkIf config.monitoring.enable {
@@ -29,8 +25,6 @@
     sops.secrets."openobserve/secret_key" = {};
     sops.secrets."openobserve/root_password".owner = "openobserve";
     sops.secrets."openobserve/secret_key".owner = "openobserve";
-
-    myImpermanence.system.directories = [ "/var/lib/openobserve" ];
 
     users.users.openobserve = {
       isSystemUser = true;
@@ -73,5 +67,11 @@
         proxyWebsockets = true;
       };
     };
+
+
+    environment.persistence."/persist" = lib.mkIf (config.impermanencia.enable) {
+      directories = [{directory = "/var/lib/openobserve"; mode = "0750";}];
+    };
+
   };
 }

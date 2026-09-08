@@ -1,7 +1,4 @@
 { pkgs, lib, config, ... }:
-let
-  user = config.usuarioPrincipal;
-in
 {
   options.keepassxc = {
     enable = lib.mkEnableOption "Activa cliente KeePassXC";
@@ -25,8 +22,9 @@ in
       Enabled=true
     '';
 
-    myImpermanence.users.${user}.directories = [
-      ".config/keepassxc"
-    ];
+    environment.persistence."/persist".users.${config.usuarioPrincipal} =
+      lib.mkIf (config.impermanencia.enable) {
+        directories = [{ directory = ".config/keepassxc"; mode = "0700"; }];
+      };
   };
 }
